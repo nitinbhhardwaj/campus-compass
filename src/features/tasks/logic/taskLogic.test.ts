@@ -7,6 +7,10 @@ import {
   sortTasksByPriority,
   filterAndSortTodayTasks,
   toggleTaskCompletion,
+  filterTasksByCategory,
+  getWeeklySummary,
+  computeStreak,
+  updateTaskDetails,
 } from './taskLogic';
 
 describe('taskLogic pure functions', () => {
@@ -164,7 +168,6 @@ describe('taskLogic pure functions', () => {
     };
 
     it('places all incomplete tasks before completed tasks, regardless of priority', () => {
-      // Even P3 incomplete should appear before P1 completed!
       const tasks = [p1Completed, p3Incomplete, p2Completed, p1Incomplete, p2Incomplete];
       const sorted = sortTasksByPriority(tasks, today);
 
@@ -253,12 +256,202 @@ describe('taskLogic pure functions', () => {
 
     it('filters out future tasks and completed past tasks, and sorts remaining correctly', () => {
       const result = filterAndSortTodayTasks(allTasks, today);
-      // Expected included:
-      // - '5' (P1, due today)
-      // - '3' (P2, overdue)
-      // - '4' (P3, daily, incomplete today)
-      // Excluded: '1' (future), '2' (completed past)
       expect(result.map((t) => t.id)).toEqual(['5', '3', '4']);
+    });
+  });
+
+  describe('6. Category filtering (filterTasksByCategory)', () => {
+    const mixedTasks: Task[] = [
+      { ...baseTask, id: 's1', category: 'study' },
+      { ...baseTask, id: 'g1', category: 'gym' },
+      { ...baseTask, id: 'c1', category: 'chore' },
+      { ...baseTask, id: 'k1', category: 'skincare' },
+      { ...baseTask, id: 'o1', category: 'other' },
+    ];
+
+    it('returns all tasks when category is "all"', () => {
+      const result = filterTasksByCategory(mixedTasks, 'all');
+      expect(result.length).toBe(5);
+    });
+
+    it('filters strictly by selected category', () => {
+      const gymTasks = filterTasksByCategory(mixedTasks, 'gym');
+      expect(gymTasks.length).toBe(1);
+      expect(gymTasks[0].id).toBe('g1');
+
+      const studyTasks = filterTasksByCategory(mixedTasks, 'study');
+      expect(studyTasks.length).toBe(1);
+      expect(studyTasks[0].id).toBe('s1');
+    });
+
+    it('returns empty array when no tasks match category', () => {
+      const onlyGym = [mixedTasks[1]];
+      const result = filterTasksByCategory(onlyGym, 'study');
+      expect(result).toEqual([]);
+    });
+  });
+
+  describe('7. Weekly summary helper (getWeeklySummary)', () => {
+    const weekStart = '2026-11-16';
+    const weekEnd = '2026-11-22';
+
+    const testTasks: Task[] = [
+      // 1. Non-recurring completed inside week
+      {
+        ...baseTask,
+        id: 'study-done',
+        category: 'study',
+        dueDate: '2026-11-18',
+        recurrence: 'none',
+        completed: true,
+      },
+      // 2. Non-recurring completed OUTSIDE week (should be ignored)
+      {
+        ...baseTask,
+        id: 'study-past',
+        category: 'study',
+        dueDate: '2026-11-10',
+        recurrence: 'none',
+        completed: true,
+      },
+      // 3. Non-recurring incomplete inside week (should be ignored)
+      {
+        ...baseTask,
+        id: 'study-inc',
+        category: 'study',
+        dueDate: '2026-11-19',
+        recurrence: 'none',
+        completed: false,
+      },
+      // 4. Daily gym completed on 3 days inside this week and 1 day outside
+      {
+        ...baseTask,
+        id: 'gym-daily',
+        category: 'gym',
+        recurrence: 'daily',
+        dueDate: '2026-11-01',
+        completedDates: ['2026-11-15', '2026-11-16', '2026-11-18', '2026-11-21'],
+      },
+      // 5. Daily skincare completed on 2 days inside this week
+      {
+        ...baseTask,
+        id: 'skin-daily',
+        category: 'skincare',
+        recurrence: 'daily',
+        dueDate: '2026-11-01',
+        completedDates: ['2026-11-20', '2026-11-21'],
+      },
+    ];
+
+    it('computes accurate completion counts per category within range', () => {
+      const summary = getWeeklySummary(testTasks, weekStart, weekEnd);
+
+      // Study: 1 ('study-done')
+      expect(summary.byCategory.study).toBe(1);
+      // Gym: 3 ('2026-11-16', '2026-11-18', '2026-11-21' -> '2026-11-15' is outside!)
+      expect(summary.byCategory.gym).toBe(3);
+      // Skincare: 2 ('2026-11-20', '2026-11-21')
+      expect(summary.byCategory.skincare).toBe(2);
+      // Chore & Other: 0
+      expect(summary.byCategory.chore).toBe(0);
+      expect(summary.byCategory.other).toBe(0);
+
+      // Total completed: 1 + 3 + 2 = 6
+      expect(summary.totalCompleted).toBe(6);
+    });
+  });
+
+  describe('8. Streak calculation (computeStreak)', () => {
+    const today = '2026-11-21';
+
+    it('returns 0 for non-recurring tasks', () => {
+      const task: Task = { ...baseTask, recurrence: 'none', completed: true };
+      expect(computeStreak(task, today)).toBe(0);
+    });
+
+    it('returns 0 when completedDates is empty', () => {
+      const task: Task = { ...baseTask, recurrence: 'daily', completedDates: [] };
+      expect(computeStreak(task, today)).toBe(0);
+    });
+
+    it('computes streak when completed today and on consecutive preceding days', () => {
+      // Completed: Nov 19, Nov 20, Nov 21 (today)
+      const task: Task = {
+        ...baseTask,
+        recurrence: 'daily',
+        completedDates: ['2026-11-19', '2026-11-20', '2026-11-21'],
+      };
+      expect(computeStreak(task, today)).toBe(3);
+    });
+
+    it('preserves active streak from yesterday when not yet completed today', () => {
+      // Completed: Nov 19, Nov 20. Today (Nov 21) is pending.
+      const task: Task = {
+        ...baseTask,
+        recurrence: 'daily',
+        completedDates: ['2026-11-19', '2026-11-20'],
+      };
+      // Streak should be 2, because today hasn't passed and yesterday was completed
+      expect(computeStreak(task, today)).toBe(2);
+    });
+
+    it('breaks streak when a day is missed (yesterday was missed and not completed today)', () => {
+      // Completed: Nov 19. Missed Nov 20 (yesterday). Not done Nov 21 (today).
+      const task: Task = {
+        ...baseTask,
+        recurrence: 'daily',
+        completedDates: ['2026-11-19'],
+      };
+      expect(computeStreak(task, today)).toBe(0);
+    });
+
+    it('restarts streak at 1 when completed today after missing yesterday', () => {
+      // Completed: Nov 18, Nov 19. Missed Nov 20. Completed Nov 21 (today).
+      const task: Task = {
+        ...baseTask,
+        recurrence: 'daily',
+        completedDates: ['2026-11-18', '2026-11-19', '2026-11-21'],
+      };
+      expect(computeStreak(task, today)).toBe(1);
+    });
+
+    it('computes weekly recurring streaks across consecutive weeks', () => {
+      // 2026-11-21 is Saturday
+      // Previous Saturdays: Nov 14, Nov 7
+      const weeklyTask: Task = {
+        ...baseTask,
+        recurrence: 'weekly',
+        dueDate: '2026-11-07',
+        completedDates: ['2026-11-07', '2026-11-14', '2026-11-21'],
+      };
+      expect(computeStreak(weeklyTask, today)).toBe(3);
+    });
+
+    it('breaks weekly streak if a week was missed', () => {
+      // Did Nov 7, missed Nov 14, completed Nov 21
+      const weeklyTask: Task = {
+        ...baseTask,
+        recurrence: 'weekly',
+        dueDate: '2026-11-07',
+        completedDates: ['2026-11-07', '2026-11-21'],
+      };
+      expect(computeStreak(weeklyTask, today)).toBe(1);
+    });
+  });
+
+  describe('9. updateTaskDetails pure function', () => {
+    it('returns an immutable updated copy with modified fields', () => {
+      const original: Task = { ...baseTask };
+      const updated = updateTaskDetails(original, {
+        title: 'Advanced Machine Learning',
+        priority: 2,
+        category: 'study',
+      });
+
+      expect(updated.title).toBe('Advanced Machine Learning');
+      expect(updated.priority).toBe(2);
+      expect(original.title).toBe('Study Algorithms'); // Original not mutated!
+      expect(original.priority).toBe(1);
     });
   });
 });

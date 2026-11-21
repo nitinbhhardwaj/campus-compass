@@ -19,6 +19,35 @@ export function getDayOfWeek(dateStr: string): number {
 }
 
 /**
+ * Adds or subtracts days from a local 'YYYY-MM-DD' string.
+ * Uses local calendar math without time-of-day or UTC interference.
+ */
+export function addDays(dateStr: string, days: number): string {
+  const [year, month, day] = dateStr.split('-').map(Number);
+  const date = new Date(year, month - 1, day);
+  date.setDate(date.getDate() + days);
+  return formatLocalDate(date);
+}
+
+/**
+ * Returns Monday-to-Sunday date range for the week containing `referenceDate`.
+ */
+export function getWeekRange(referenceDate: string): { startDate: string; endDate: string } {
+  const [year, month, day] = referenceDate.split('-').map(Number);
+  const date = new Date(year, month - 1, day);
+  const dayOfWeek = date.getDay(); // 0 = Sun, 1 = Mon, ..., 6 = Sat
+  // Calculate distance from Monday (1)
+  const diffToMonday = dayOfWeek === 0 ? -6 : 1 - dayOfWeek;
+  const monday = new Date(year, month - 1, day + diffToMonday);
+  const sunday = new Date(year, month - 1, day + diffToMonday + 6);
+
+  return {
+    startDate: formatLocalDate(monday),
+    endDate: formatLocalDate(sunday),
+  };
+}
+
+/**
  * Compares two 'YYYY-MM-DD' date strings.
  * Returns true if dateA is strictly earlier than dateB.
  */
