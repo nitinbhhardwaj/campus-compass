@@ -7,8 +7,12 @@ import {
   toggleTaskCompletion,
   isTaskCompletedOnDate,
   isTaskOverdue,
+  filterTasksByCategory,
+  updateTaskDetails,
+  getWeeklySummary,
 } from '../logic/taskLogic';
-import { formatLocalDate } from '../../../lib/dateUtils';
+import { formatLocalDate, getWeekRange } from '../../../lib/dateUtils';
+import { CategoryFilterType } from '../components/CategoryFilter';
 
 export function useTasks(
   repo: TaskRepository = defaultRepo,
@@ -17,6 +21,7 @@ export function useTasks(
   const [tasks, setTasks] = useState<Task[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
+  const [categoryFilter, setCategoryFilter] = useState<CategoryFilterType>('all');
 
   const loadTasks = useCallback(async () => {
     try {
@@ -50,6 +55,28 @@ export function useTasks(
     return saved;
   };
 
+  const updateTask = async (
+    taskId: string,
+    updates: Partial<Pick<Task, 'title' | 'category' | 'priority' | 'dueDate' | 'recurrence'>>
+  ): Promise<Task | null> => {
+    const target = tasks.find((t) => t.id === taskId);
+    if (!target) return null;
+
+    const updated = updateTaskDetails(target, updates);
+    // Optimistic UI update
+    setTasks((prev) => prev.map((t) => (t.id === taskId ? updated : t)));
+
+    try {
+      await repo.updateTask(updated);
+      return updated;
+    } catch (err) {
+      console.error('Failed to update task:', err);
+      // Rollback on failure
+      setTasks((prev) => prev.map((t) => (t.id === taskId ? target : t)));
+      return null;
+    }
+  };
+
   const toggleTask = async (taskId: string): Promise<void> => {
     const target = tasks.find((t) => t.id === taskId);
     if (!target) return;
@@ -81,12 +108,33 @@ export function useTasks(
     }
   };
 
-  // Pure derived view for today
+  // Pure derived list of all tasks relevant for today (unfiltered by category)
   const todayTasks = useMemo(() => {
     return filterAndSortTodayTasks(tasks, today);
   }, [tasks, today]);
 
-  // Derived progress statistics
+  // Filtered by selected category chip
+  const filteredTasks = useMemo(() => {
+    return filterTasksByCategory(todayTasks, categoryFilter);
+  }, [todayTasks, categoryFilter]);
+
+  // Counts for each category filter badge
+  const categoryCounts = useMemo<Record<CategoryFilterType, number>>(() => {
+    const counts: Record<CategoryFilterType, number> = {
+      all: todayTasks.length,
+      study: 0,
+      gym: 0,
+      skincare: 0,
+      chore: 0,
+      other: 0,
+    };
+    for (const t of todayTasks) {
+      counts[t.category] = (counts[t.category] || 0) + 1;
+    }
+    return counts;
+  }, [todayTasks]);
+
+  // Derived progress statistics for today's plan
   const stats = useMemo(() => {
     const total = todayTasks.length;
     const completed = todayTasks.filter((t) => isTaskCompletedOnDate(t, today)).length;
@@ -99,14 +147,30 @@ export function useTasks(
     };
   }, [todayTasks, today]);
 
+  // Weekly summary and range
+  const weekRange = useMemo(() => {
+    return getWeekRange(today);
+  }, [today]);
+
+  const weeklySummary = useMemo(() => {
+    return getWeeklySummary(tasks, weekRange.startDate, weekRange.endDate);
+  }, [tasks, weekRange]);
+
   return {
     tasks,
     todayTasks,
+    filteredTasks,
+    categoryCounts,
+    categoryFilter,
+    setCategoryFilter,
     stats,
+    weekRange,
+    weeklySummary,
     isLoading,
     error,
     today,
     addTask,
+    updateTask,
     toggleTask,
     deleteTask,
     refreshTasks: loadTasks,
