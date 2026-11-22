@@ -8,6 +8,9 @@ import { CategoryFilter } from './features/tasks/components/CategoryFilter';
 import { WeeklySummaryCard } from './features/tasks/components/WeeklySummaryCard';
 import { Modal } from './components/Modal';
 import { Task } from './types/task';
+import { useProtein } from './features/protein/hooks/useProtein';
+import { ProteinCard } from './features/protein/components/ProteinCard';
+import { ProteinSettingsModal } from './features/protein/components/ProteinSettingsModal';
 
 export default function App() {
   const {
@@ -18,8 +21,8 @@ export default function App() {
     stats,
     weekRange,
     weeklySummary,
-    isLoading,
-    error,
+    isLoading: isTasksLoading,
+    error: taskError,
     today,
     addTask,
     updateTask,
@@ -27,23 +30,39 @@ export default function App() {
     deleteTask,
   } = useTasks();
 
-  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const {
+    settings: proteinSettings,
+    totalGrams: proteinTotal,
+    remainingGrams: proteinRemaining,
+    progress: proteinProgress,
+    todayEntries: todayProteinEntries,
+    addEntry: addProteinEntry,
+    deleteEntry: deleteProteinEntry,
+    updateSettings: updateProteinSettings,
+    isLoading: isProteinLoading,
+    error: proteinError,
+  } = useProtein(undefined, today);
+
+  const [isAddTaskModalOpen, setIsAddTaskModalOpen] = useState(false);
   const [taskToEdit, setTaskToEdit] = useState<Task | null>(null);
+  const [isProteinSettingsOpen, setIsProteinSettingsOpen] = useState(false);
 
-  const handleOpenAddModal = () => {
+  const handleOpenAddTaskModal = () => {
     setTaskToEdit(null);
-    setIsAddModalOpen(true);
+    setIsAddTaskModalOpen(true);
   };
 
-  const handleOpenEditModal = (task: Task) => {
+  const handleOpenEditTaskModal = (task: Task) => {
     setTaskToEdit(task);
-    setIsAddModalOpen(true);
+    setIsAddTaskModalOpen(true);
   };
 
-  const handleCloseModal = () => {
-    setIsAddModalOpen(false);
+  const handleCloseTaskModal = () => {
+    setIsAddTaskModalOpen(false);
     setTaskToEdit(null);
   };
+
+  const isLoading = isTasksLoading || isProteinLoading;
 
   return (
     <div className="min-h-screen bg-slate-100 text-slate-900 flex justify-center selection:bg-indigo-500 selection:text-white">
@@ -65,20 +84,20 @@ export default function App() {
             </div>
           </div>
           <span className="text-[11px] font-semibold text-indigo-700 bg-indigo-50 px-2 py-0.5 rounded-full border border-indigo-200">
-            Phase 2
+            Phase 3
           </span>
         </header>
 
         {/* Loading and Error Feedback */}
         {isLoading && (
           <div className="py-12 text-center text-xs text-slate-500">
-            Loading your schedule...
+            Loading your schedule and nutrition...
           </div>
         )}
 
-        {error && (
+        {(taskError || proteinError) && (
           <div role="alert" className="mb-4 p-3 rounded-xl bg-rose-50 text-rose-700 text-xs border border-rose-200">
-            {error}
+            {taskError || proteinError}
           </div>
         )}
 
@@ -90,7 +109,24 @@ export default function App() {
               completedTasks={stats.completed}
               overdueCount={stats.overdueCount}
               completionPercentage={stats.percentage}
-              onOpenAddModal={handleOpenAddModal}
+              onOpenAddModal={handleOpenAddTaskModal}
+            />
+
+            {/* Protein Tracker Module Card */}
+            <ProteinCard
+              today={today}
+              totalGrams={proteinTotal}
+              goalGrams={proteinSettings.goalGrams}
+              remainingGrams={proteinRemaining}
+              progress={proteinProgress}
+              todayEntries={todayProteinEntries}
+              onAddEntry={async (dto) => {
+                await addProteinEntry(dto);
+              }}
+              onDeleteEntry={async (id) => {
+                await deleteProteinEntry(id);
+              }}
+              onOpenSettings={() => setIsProteinSettingsOpen(true)}
             />
 
             {/* Weekly Summary Card */}
@@ -115,9 +151,9 @@ export default function App() {
                 categoryFilter={categoryFilter}
                 onClearCategoryFilter={() => setCategoryFilter('all')}
                 onToggle={toggleTask}
-                onEdit={handleOpenEditModal}
+                onEdit={handleOpenEditTaskModal}
                 onDelete={deleteTask}
-                onOpenAddModal={handleOpenAddModal}
+                onOpenAddModal={handleOpenAddTaskModal}
               />
             </section>
           </>
@@ -125,8 +161,8 @@ export default function App() {
 
         {/* Modal for adding / editing tasks */}
         <Modal
-          isOpen={isAddModalOpen}
-          onClose={handleCloseModal}
+          isOpen={isAddTaskModalOpen}
+          onClose={handleCloseTaskModal}
           title={taskToEdit ? 'Edit Task' : 'New Task'}
         >
           <TaskForm
@@ -139,9 +175,19 @@ export default function App() {
                 await addTask(dto);
               }
             }}
-            onClose={handleCloseModal}
+            onClose={handleCloseTaskModal}
           />
         </Modal>
+
+        {/* Modal for Protein Settings */}
+        <ProteinSettingsModal
+          isOpen={isProteinSettingsOpen}
+          currentSettings={proteinSettings}
+          onSave={async (newSettings) => {
+            await updateProteinSettings(newSettings);
+          }}
+          onClose={() => setIsProteinSettingsOpen(false)}
+        />
       </main>
     </div>
   );
