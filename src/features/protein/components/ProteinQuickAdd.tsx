@@ -9,6 +9,17 @@ interface ProteinQuickAddProps {
   onAdd: (dto: CreateProteinEntryDTO) => Promise<void>;
 }
 
+const PRESET_EMOJIS: Record<string, string> = {
+  egg: '🥚',
+  paneer: '🧀',
+  dal: '🍲',
+  whey: '⚡',
+  chicken: '🍗',
+  milk: '🥛',
+  soya: '🌱',
+  curd: '🥣',
+};
+
 export const ProteinQuickAdd: React.FC<ProteinQuickAddProps> = ({
   today,
   onAdd,
@@ -65,16 +76,16 @@ export const ProteinQuickAdd: React.FC<ProteinQuickAddProps> = ({
   };
 
   return (
-    <div className="mt-3">
-      {/* Quick Add Presets Grid */}
+    <div className="mt-2">
+      {/* Quick Add Presets: Horizontal Scrolling Chip Row with Emoji */}
       <div className="flex items-center justify-between mb-2">
-        <span className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider">
-          Quick-Add Presets (Approximate)
+        <span className="text-[11px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+          Quick-Add Presets (~approx)
         </span>
         <button
           type="button"
           onClick={() => setShowCustom(!showCustom)}
-          className="text-xs font-semibold text-indigo-600 hover:text-indigo-700 cursor-pointer focus:outline-none focus:ring-2 focus:ring-indigo-500 rounded px-1"
+          className="text-xs font-semibold text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 cursor-pointer focus:outline-none focus:ring-2 focus:ring-indigo-500 rounded px-1"
         >
           {showCustom ? 'Hide Custom' : '+ Custom Entry'}
         </button>
@@ -83,35 +94,45 @@ export const ProteinQuickAdd: React.FC<ProteinQuickAddProps> = ({
       <div
         role="group"
         aria-label="Protein quick add presets"
-        className="grid grid-cols-2 sm:grid-cols-4 gap-1.5"
+        className="flex items-center gap-2 overflow-x-auto no-scrollbar py-1"
       >
-        {PROTEIN_PRESETS.map((preset) => (
-          <button
-            key={preset.id}
-            type="button"
-            onClick={() => handlePresetClick(preset)}
-            className="flex items-center justify-between px-2.5 py-2 rounded-xl bg-slate-50 hover:bg-indigo-50/70 border border-slate-200/80 hover:border-indigo-300 text-left transition-all cursor-pointer focus:outline-none focus:ring-2 focus:ring-indigo-500"
-            aria-label={`Add ${preset.label}, approximately ${preset.grams} grams of protein`}
-          >
-            <span className="text-xs font-medium text-slate-700 truncate pr-1">
-              {preset.label}
-            </span>
-            <span className="text-[11px] font-bold text-indigo-600 bg-white px-1.5 py-0.5 rounded-md border border-slate-200/60 shadow-2xs flex-shrink-0">
-              ~{preset.grams}g
-            </span>
-          </button>
-        ))}
+        {PROTEIN_PRESETS.map((preset) => {
+          const emoji = PRESET_EMOJIS[preset.id] || '⚡';
+          return (
+            <button
+              key={preset.id}
+              type="button"
+              onClick={() => handlePresetClick(preset)}
+              className="flex-shrink-0 inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800/80 hover:bg-indigo-50/70 dark:hover:bg-indigo-950/60 border border-slate-200/80 dark:border-slate-700 text-left transition-all cursor-pointer focus:outline-none focus:ring-2 focus:ring-indigo-500 min-h-[44px]"
+              aria-label={`Add ${preset.label}, approximately ${preset.grams} grams of protein`}
+            >
+              <span className="text-base" aria-hidden="true">
+                {emoji}
+              </span>
+              <span className="text-xs font-semibold text-slate-700 dark:text-slate-200">
+                {preset.label}
+              </span>
+              <span className="text-[10px] font-bold text-indigo-600 dark:text-indigo-400 bg-white dark:bg-slate-900 px-1.5 py-0.5 rounded-md border border-slate-200/60 dark:border-slate-700">
+                ~{preset.grams}g
+              </span>
+            </button>
+          );
+        })}
       </div>
 
       {/* Custom Entry Form */}
       {showCustom && (
         <form
           onSubmit={handleCustomSubmit}
-          className="mt-3 p-3 bg-slate-50 rounded-2xl border border-slate-200/80 flex flex-col gap-2.5"
+          className="mt-3 p-3 bg-slate-50 dark:bg-slate-800/70 rounded-2xl border border-slate-200/80 dark:border-slate-700 flex flex-col gap-2.5 animate-in fade-in duration-150"
         >
-          <div className="text-xs font-bold text-slate-800">Log Custom Protein</div>
+          <div className="text-xs font-bold text-slate-800 dark:text-slate-200">
+            Log Custom Protein
+          </div>
           {customError && (
-            <div className="text-[11px] text-rose-600 font-medium">{customError}</div>
+            <div className="text-[11px] text-rose-600 dark:text-rose-400 font-medium">
+              {customError}
+            </div>
           )}
           <div className="flex gap-2">
             <div className="flex-1">
@@ -121,10 +142,10 @@ export const ProteinQuickAdd: React.FC<ProteinQuickAddProps> = ({
               <input
                 id="custom-protein-label"
                 type="text"
-                placeholder="Item name (e.g., Tofu bowl)"
+                placeholder="e.g. Tofu bowl"
                 value={customLabel}
                 onChange={(e) => setCustomLabel(e.target.value)}
-                className="w-full px-3 py-1.5 text-xs bg-white border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                className="w-full px-3 py-2 text-xs bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500"
                 autoFocus
               />
             </div>
@@ -140,7 +161,7 @@ export const ProteinQuickAdd: React.FC<ProteinQuickAddProps> = ({
                 placeholder="Grams"
                 value={customGrams}
                 onChange={(e) => setCustomGrams(e.target.value)}
-                className="w-full px-3 py-1.5 text-xs bg-white border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                className="w-full px-3 py-2 text-xs bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500"
               />
             </div>
             <Button
@@ -156,8 +177,8 @@ export const ProteinQuickAdd: React.FC<ProteinQuickAddProps> = ({
         </form>
       )}
 
-      {/* Explicit disclaimer constraint: marked clearly as approximate */}
-      <div className="text-[10px] text-slate-400 mt-2 italic">
+      {/* Explicit Disclaimer */}
+      <div className="text-[10px] text-slate-400 dark:text-slate-500 mt-2 italic">
         * Preset protein values are approximate reference estimates.
       </div>
     </div>

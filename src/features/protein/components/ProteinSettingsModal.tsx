@@ -78,14 +78,14 @@ export const ProteinSettingsModal: React.FC<ProteinSettingsModalProps> = ({
     <Modal isOpen={isOpen} onClose={onClose} title="Protein Target Settings">
       <form onSubmit={handleSubmit} className="flex flex-col gap-4">
         {errors.form && (
-          <div role="alert" className="p-3 text-xs rounded-xl bg-rose-50 text-rose-700 border border-rose-200">
+          <div role="alert" className="p-3 text-xs rounded-xl bg-rose-50 dark:bg-rose-950/50 text-rose-700 dark:text-rose-300 border border-rose-200 dark:border-rose-900">
             {errors.form}
           </div>
         )}
 
         {/* Body Weight Input */}
         <div>
-          <label htmlFor="protein-body-weight" className="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-1.5">
+          <label htmlFor="protein-body-weight" className="block text-xs font-semibold uppercase tracking-wider text-slate-600 dark:text-slate-400 mb-1.5">
             Body Weight (kg)
           </label>
           <input
@@ -96,27 +96,27 @@ export const ProteinSettingsModal: React.FC<ProteinSettingsModalProps> = ({
             max="300"
             value={weightInput}
             onChange={(e) => handleWeightChange(e.target.value)}
-            className="w-full px-3.5 py-2.5 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            className="w-full px-3.5 py-2.5 text-sm bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl focus:bg-white dark:focus:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500"
             required
           />
           {errors.bodyWeightKg && (
-            <p className="mt-1 text-xs text-rose-600 font-medium">{errors.bodyWeightKg}</p>
+            <p className="mt-1 text-xs text-rose-600 dark:text-rose-400 font-medium">{errors.bodyWeightKg}</p>
           )}
-          <p className="mt-1 text-[11px] text-slate-400">
+          <p className="mt-1 text-[11px] text-slate-400 dark:text-slate-500">
             Standard baseline multiplier is 1.6g of protein per kg of body weight.
           </p>
         </div>
 
         {/* Goal Calculation & Custom Override */}
-        <div className="p-3 bg-slate-50 rounded-2xl border border-slate-200/80">
+        <div className="p-3 bg-slate-50 dark:bg-slate-800/80 rounded-2xl border border-slate-200/80 dark:border-slate-700">
           <div className="flex items-center justify-between mb-2">
-            <span className="text-xs font-semibold text-slate-700">Daily Target (grams)</span>
-            <label className="flex items-center gap-1.5 text-xs text-slate-500 cursor-pointer">
+            <span className="text-xs font-semibold text-slate-700 dark:text-slate-300">Daily Target (grams)</span>
+            <label className="flex items-center gap-1.5 text-xs text-slate-500 dark:text-slate-400 cursor-pointer">
               <input
                 type="checkbox"
                 checked={isManualOverride}
                 onChange={(e) => handleOverrideToggle(e.target.checked)}
-                className="rounded border-slate-300 text-indigo-600 focus:ring-indigo-500 cursor-pointer"
+                className="rounded border-slate-300 dark:border-slate-600 text-indigo-600 focus:ring-indigo-500 cursor-pointer"
               />
               <span>Custom Target</span>
             </label>
@@ -132,23 +132,23 @@ export const ProteinSettingsModal: React.FC<ProteinSettingsModalProps> = ({
             onChange={(e) => setGoalInput(e.target.value)}
             className={`w-full px-3.5 py-2 text-sm rounded-xl border transition-all ${
               isManualOverride
-                ? 'bg-white border-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-500'
-                : 'bg-slate-100 border-slate-200 text-slate-500 cursor-not-allowed'
+                ? 'bg-white dark:bg-slate-900 border-slate-300 dark:border-slate-600 focus:outline-none focus:ring-2 focus:ring-indigo-500'
+                : 'bg-slate-100 dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-500 cursor-not-allowed'
             }`}
             required
           />
           {errors.goalGrams && (
-            <p className="mt-1 text-xs text-rose-600 font-medium">{errors.goalGrams}</p>
+            <p className="mt-1 text-xs text-rose-600 dark:text-rose-400 font-medium">{errors.goalGrams}</p>
           )}
           {!isManualOverride && (
-            <p className="mt-1 text-[11px] text-slate-400">
+            <p className="mt-1 text-[11px] text-slate-400 dark:text-slate-500">
               Auto-calculated from weight: {Math.round(parseFloat(weightInput || '0') * 1.6) || 0}g/day
             </p>
           )}
         </div>
 
         {/* Action Buttons */}
-        <div className="flex items-center justify-end gap-2 pt-2 border-t border-slate-100">
+        <div className="flex items-center justify-end gap-2 pt-2 border-t border-slate-100 dark:border-slate-800">
           <Button type="button" variant="secondary" size="md" onClick={onClose} disabled={isSubmitting}>
             Cancel
           </Button>
