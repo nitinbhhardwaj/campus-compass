@@ -120,6 +120,47 @@ The three primary feature modules (`tasks`, `protein`, `expenses`) are isolated 
 
 ---
 
+## 🎨 Design System & UI Architecture
+
+Campus Compass features a custom, atomic design system crafted for a calm, high-focus productivity experience inspired by Linear, Notion Calendar, and Apple Fitness. It is fully mobile-first and scales seamlessly into a desktop two-column bento dashboard (`lg:grid-cols-12`).
+
+### 1. Design Tokens (Tailwind CSS v4)
+- **Primary Accent:** Indigo (`--color-primary-50` through `--color-primary-900`, anchor `#6366f1` / `#4f46e5`).
+- **Neutral Grayscale:** Slate (`slate-50` through `slate-950`) providing high contrast and low eye fatigue in both modes.
+- **Semantic Colors:**
+  - Success: `emerald-500` / `emerald-600` (task completion, on-track progress)
+  - Warning: `amber-500` / `amber-600` (budget warnings $\ge 80\%$, planning nudges)
+  - Danger: `rose-500` / `rose-600` (overdue tasks, budget deficits, critical deadline pressure)
+  - Modules: `purple-500` (rent), `sky-500` (travel), `amber-500` (food/nutrition)
+- **Typography:** `Inter` variable font with strict typographic hierarchy and tabular numerals (`.tabular-nums`) for currency and numerical metrics.
+- **Spacing Scale:** Standard 4px / 8px grid (`gap-1.5`, `gap-2`, `gap-3`, `gap-4`, `p-4`, `p-5`).
+- **Radius Scale:** Soft modern corners (`rounded-xl` 12px, `rounded-2xl` 16px, `rounded-3xl` 24px).
+- **Shadow Scale:** Layered soft ambient shadows (`shadow-2xs`, `shadow-xs`, `shadow-sm`, `shadow-md`).
+- **Theme Provider:** Instant dark/light mode toggle supporting system preferences (`prefers-color-scheme`) and manual selection with persistent local caching and zero-flash loading.
+- **Accessibility & Motion:**
+  - Strict **44px minimum touch targets** on all mobile controls, chips, and icon triggers (using `min-h-[44px]` or pseudo-element hit-target expansions).
+  - WCAG AA compliant text contrast in both light and dark modes.
+  - Keyboard focus rings (`focus:ring-2 focus:ring-indigo-500`).
+  - Full `prefers-reduced-motion` compliance resetting transitions and animations for motion-sensitive users.
+
+### 2. Reusable Component Library (`src/components/`)
+All screens and feature modules are built using atomic, decoupled UI components:
+| Component | Path | Description & Capabilities |
+| :--- | :--- | :--- |
+| **`Card`** | `src/components/Card.tsx` | Base container surface with rounded-2xl border, soft shadow, and dark mode background tokens. |
+| **`Button`** | `src/components/Button.tsx` | Accessible button with `primary`, `secondary`, `ghost`, and `danger` variants; supports sizes, loading states, and minimum 44px hit-target. |
+| **`IconButton`** | `src/components/IconButton.tsx` | Icon-only button with mandatory `aria-label`, 44px touch target padding, and hover/focus rings. |
+| **`Badge`** | `src/components/Badge.tsx` | Status and category indicators (`indigo`, `emerald`, `amber`, `rose`, `purple`, `slate`). |
+| **`Chip`** | `src/components/Chip.tsx` | Interactive filter pill with active/inactive states and badge counter support. |
+| **`ProgressBar`** | `src/components/ProgressBar.tsx` | Animated horizontal progress bar with semantic color variants. |
+| **`ProgressRing`** | `src/components/ProgressRing.tsx` | SVG circular progress ring with stroke-dashoffset animation and centered custom content. |
+| **`Modal`** | `src/components/Modal.tsx` | Accessible dialog modal with keyboard `Escape` handler, focus trapping, and backdrop blur. |
+| **`EmptyState`** | `src/components/EmptyState.tsx` | Clean empty state view with icon, title, description, and optional action trigger. |
+| **`AppHeader`** | `src/components/AppHeader.tsx` | Personalized dynamic greeting ("Good morning / afternoon / evening, Nitin"), calendar date, and theme toggle. |
+| **`BottomNav`** | `src/components/BottomNav.tsx` | Mobile-first 4-tab bottom navigation bar with active indicators and 44px touch targets. |
+
+---
+
 ## 🛠️ Key Engineering Decisions
 
 | Decision | Why It Matters / Interview Defense |
