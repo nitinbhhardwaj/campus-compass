@@ -73,18 +73,18 @@ export const ExpenseForm: React.FC<ExpenseFormProps> = ({
   return (
     <form onSubmit={handleSubmit} className="flex flex-col gap-3.5">
       {error && (
-        <div role="alert" className="p-3 text-xs rounded-xl bg-rose-50 text-rose-700 border border-rose-200">
+        <div role="alert" className="p-3 text-xs rounded-xl bg-rose-50 dark:bg-rose-950/40 text-rose-700 dark:text-rose-300 border border-rose-200 dark:border-rose-900/50">
           {error}
         </div>
       )}
 
       {/* Amount Input (Rupees) */}
       <div>
-        <label htmlFor="expense-amount" className="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-1">
+        <label htmlFor="expense-amount" className="block text-xs font-semibold uppercase tracking-wider text-slate-600 dark:text-slate-400 mb-1">
           Amount (₹ INR)
         </label>
         <div className="relative">
-          <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-sm font-bold text-slate-400">
+          <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-sm font-bold text-slate-400 dark:text-slate-500">
             ₹
           </span>
           <input
@@ -94,19 +94,19 @@ export const ExpenseForm: React.FC<ExpenseFormProps> = ({
             placeholder="e.g. 250 or 12.50"
             value={rupeesInput}
             onChange={(e) => setRupeesInput(e.target.value)}
-            className="w-full pl-8 pr-3.5 py-2.5 text-sm font-semibold bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            className="w-full pl-8 pr-3.5 py-2.5 text-sm font-semibold tabular-nums bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-slate-100 rounded-xl focus:bg-white dark:focus:bg-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-500"
             autoFocus
             required
           />
         </div>
-        <p className="mt-1 text-[10px] text-slate-400">
+        <p className="mt-1 text-[10px] text-slate-400 dark:text-slate-500">
           Stored accurately as integer paise without floating-point errors.
         </p>
       </div>
 
       {/* Description / Note */}
       <div>
-        <label htmlFor="expense-note" className="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-1">
+        <label htmlFor="expense-note" className="block text-xs font-semibold uppercase tracking-wider text-slate-600 dark:text-slate-400 mb-1">
           Description
         </label>
         <input
@@ -115,14 +115,14 @@ export const ExpenseForm: React.FC<ExpenseFormProps> = ({
           placeholder="e.g. Canteen lunch, metro pass, textbook"
           value={note}
           onChange={(e) => setNote(e.target.value)}
-          className="w-full px-3.5 py-2 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
+          className="w-full px-3.5 py-2 text-sm bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-slate-100 rounded-xl focus:bg-white dark:focus:bg-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-500"
           required
         />
       </div>
 
       {/* Category Selection */}
       <div>
-        <span className="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-1">
+        <span className="block text-xs font-semibold uppercase tracking-wider text-slate-600 dark:text-slate-400 mb-1">
           Category
         </span>
         <div role="radiogroup" aria-label="Expense Category" className="grid grid-cols-3 gap-1.5">
@@ -133,10 +133,10 @@ export const ExpenseForm: React.FC<ExpenseFormProps> = ({
               role="radio"
               aria-checked={category === cat.value}
               onClick={() => setCategory(cat.value)}
-              className={`py-2 px-2 text-xs font-medium rounded-xl border text-center transition-all cursor-pointer focus:outline-none focus:ring-2 focus:ring-indigo-500 ${
+              className={`py-2 px-2 text-xs font-medium rounded-xl border text-center transition-all cursor-pointer min-h-[44px] flex items-center justify-center focus:outline-none focus:ring-2 focus:ring-indigo-500 ${
                 category === cat.value
-                  ? 'bg-indigo-50 border-indigo-500 text-indigo-700 font-semibold shadow-2xs'
-                  : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50'
+                  ? 'bg-indigo-50 dark:bg-indigo-950/60 border-indigo-500 dark:border-indigo-500/80 text-indigo-700 dark:text-indigo-300 font-semibold shadow-2xs'
+                  : 'bg-white dark:bg-slate-800/80 border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800'
               }`}
             >
               {cat.label}
@@ -147,7 +147,7 @@ export const ExpenseForm: React.FC<ExpenseFormProps> = ({
 
       {/* Date */}
       <div>
-        <label htmlFor="expense-date" className="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-1">
+        <label htmlFor="expense-date" className="block text-xs font-semibold uppercase tracking-wider text-slate-600 dark:text-slate-400 mb-1">
           Date
         </label>
         <input
@@ -155,13 +155,13 @@ export const ExpenseForm: React.FC<ExpenseFormProps> = ({
           type="date"
           value={date}
           onChange={(e) => setDate(e.target.value)}
-          className="w-full px-3.5 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
+          className="w-full px-3.5 py-2 text-xs bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-slate-100 rounded-xl focus:bg-white dark:focus:bg-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 min-h-[44px]"
           required
         />
       </div>
 
       {/* Actions */}
-      <div className="flex items-center justify-end gap-2 pt-2 border-t border-slate-100">
+      <div className="flex items-center justify-end gap-2 pt-2 border-t border-slate-100 dark:border-slate-800">
         {onClose && (
           <Button type="button" variant="secondary" size="md" onClick={onClose} disabled={isSubmitting}>
             Cancel
