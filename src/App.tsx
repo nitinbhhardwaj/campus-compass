@@ -11,6 +11,10 @@ import { Task } from './types/task';
 import { useProtein } from './features/protein/hooks/useProtein';
 import { ProteinCard } from './features/protein/components/ProteinCard';
 import { ProteinSettingsModal } from './features/protein/components/ProteinSettingsModal';
+import { useExpenses } from './features/expenses/hooks/useExpenses';
+import { ExpenseCard } from './features/expenses/components/ExpenseCard';
+import { ExpenseSettingsModal } from './features/expenses/components/ExpenseSettingsModal';
+import { formatMonthDisplay } from './lib/dateUtils';
 
 export default function App() {
   const {
@@ -43,9 +47,29 @@ export default function App() {
     error: proteinError,
   } = useProtein(undefined, today);
 
+  const {
+    settings: expenseSettings,
+    selectedMonth,
+    goToPreviousMonth,
+    goToNextMonth,
+    totalSpentPaise,
+    remainingBudgetPaise,
+    usedPercent,
+    status: expenseStatus,
+    categoryTotals: expenseCategoryTotals,
+    categoryWarnings: expenseCategoryWarnings,
+    monthExpenses,
+    addExpense,
+    deleteExpense,
+    updateSettings: updateExpenseSettings,
+    isLoading: isExpensesLoading,
+    error: expenseError,
+  } = useExpenses(undefined, today);
+
   const [isAddTaskModalOpen, setIsAddTaskModalOpen] = useState(false);
   const [taskToEdit, setTaskToEdit] = useState<Task | null>(null);
   const [isProteinSettingsOpen, setIsProteinSettingsOpen] = useState(false);
+  const [isExpenseSettingsOpen, setIsExpenseSettingsOpen] = useState(false);
 
   const handleOpenAddTaskModal = () => {
     setTaskToEdit(null);
@@ -62,7 +86,8 @@ export default function App() {
     setTaskToEdit(null);
   };
 
-  const isLoading = isTasksLoading || isProteinLoading;
+  const isLoading = isTasksLoading || isProteinLoading || isExpensesLoading;
+  const combinedError = taskError || proteinError || expenseError;
 
   return (
     <div className="min-h-screen bg-slate-100 text-slate-900 flex justify-center selection:bg-indigo-500 selection:text-white">
@@ -84,20 +109,20 @@ export default function App() {
             </div>
           </div>
           <span className="text-[11px] font-semibold text-indigo-700 bg-indigo-50 px-2 py-0.5 rounded-full border border-indigo-200">
-            Phase 3
+            Phase 4
           </span>
         </header>
 
         {/* Loading and Error Feedback */}
         {isLoading && (
           <div className="py-12 text-center text-xs text-slate-500">
-            Loading your schedule and nutrition...
+            Loading your student dashboard...
           </div>
         )}
 
-        {(taskError || proteinError) && (
+        {combinedError && (
           <div role="alert" className="mb-4 p-3 rounded-xl bg-rose-50 text-rose-700 text-xs border border-rose-200">
-            {taskError || proteinError}
+            {combinedError}
           </div>
         )}
 
@@ -127,6 +152,30 @@ export default function App() {
                 await deleteProteinEntry(id);
               }}
               onOpenSettings={() => setIsProteinSettingsOpen(true)}
+            />
+
+            {/* Expense Tracker Module Card */}
+            <ExpenseCard
+              selectedMonth={selectedMonth}
+              selectedMonthDisplay={formatMonthDisplay(selectedMonth)}
+              totalSpentPaise={totalSpentPaise}
+              monthlyBudgetPaise={expenseSettings.monthlyBudgetPaise}
+              remainingBudgetPaise={remainingBudgetPaise}
+              usedPercent={usedPercent}
+              status={expenseStatus}
+              categoryTotals={expenseCategoryTotals}
+              categoryWarnings={expenseCategoryWarnings}
+              monthExpenses={monthExpenses}
+              today={today}
+              onAddExpense={async (dto) => {
+                await addExpense(dto);
+              }}
+              onDeleteExpense={async (id) => {
+                await deleteExpense(id);
+              }}
+              onPreviousMonth={goToPreviousMonth}
+              onNextMonth={goToNextMonth}
+              onOpenSettings={() => setIsExpenseSettingsOpen(true)}
             />
 
             {/* Weekly Summary Card */}
@@ -187,6 +236,16 @@ export default function App() {
             await updateProteinSettings(newSettings);
           }}
           onClose={() => setIsProteinSettingsOpen(false)}
+        />
+
+        {/* Modal for Expense Budget Settings */}
+        <ExpenseSettingsModal
+          isOpen={isExpenseSettingsOpen}
+          currentSettings={expenseSettings}
+          onSave={async (newSettings) => {
+            await updateExpenseSettings(newSettings);
+          }}
+          onClose={() => setIsExpenseSettingsOpen(false)}
         />
       </main>
     </div>
