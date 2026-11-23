@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { Compass } from 'lucide-react';
 import { useTasks } from './features/tasks/hooks/useTasks';
 import { TodayHeader } from './features/tasks/components/TodayHeader';
@@ -15,9 +15,13 @@ import { useExpenses } from './features/expenses/hooks/useExpenses';
 import { ExpenseCard } from './features/expenses/components/ExpenseCard';
 import { ExpenseSettingsModal } from './features/expenses/components/ExpenseSettingsModal';
 import { formatMonthDisplay } from './lib/dateUtils';
+import { buildDaySnapshot } from './app/buildDaySnapshot';
+import { generateSuggestions } from './features/suggestions/logic/engine';
+import { SuggestionsCard } from './features/suggestions/components/SuggestionsCard';
 
 export default function App() {
   const {
+    tasks,
     filteredTasks,
     categoryCounts,
     categoryFilter,
@@ -89,6 +93,43 @@ export default function App() {
   const isLoading = isTasksLoading || isProteinLoading || isExpensesLoading;
   const combinedError = taskError || proteinError || expenseError;
 
+  // Build DaySnapshot via anti-corruption adapter and generate rule-based suggestions
+  const currentHour = useMemo(() => new Date().getHours(), []);
+
+  const daySnapshot = useMemo(() => {
+    return buildDaySnapshot({
+      tasks,
+      today,
+      hour: currentHour,
+      protein: {
+        totalGrams: proteinTotal,
+        goalGrams: proteinSettings.goalGrams,
+      },
+      expenses: {
+        totalSpentPaise,
+        monthlyBudgetPaise: expenseSettings.monthlyBudgetPaise,
+        categoryTotals: expenseCategoryTotals,
+        categoryBudgetsPaise: expenseSettings.categoryBudgetsPaise,
+      },
+      weekRange,
+    });
+  }, [
+    tasks,
+    today,
+    currentHour,
+    proteinTotal,
+    proteinSettings.goalGrams,
+    totalSpentPaise,
+    expenseSettings.monthlyBudgetPaise,
+    expenseCategoryTotals,
+    expenseSettings.categoryBudgetsPaise,
+    weekRange,
+  ]);
+
+  const suggestions = useMemo(() => {
+    return generateSuggestions(daySnapshot);
+  }, [daySnapshot]);
+
   return (
     <div className="min-h-screen bg-slate-100 text-slate-900 flex justify-center selection:bg-indigo-500 selection:text-white">
       {/* Mobile-first centered frame: authentic mobile viewport on desktop */}
@@ -104,12 +145,12 @@ export default function App() {
                 Campus Compass
               </div>
               <div className="text-[10px] text-slate-500 font-medium tracking-wide">
-                Daily Student Planner
+                Context-Aware Student Engine
               </div>
             </div>
           </div>
           <span className="text-[11px] font-semibold text-indigo-700 bg-indigo-50 px-2 py-0.5 rounded-full border border-indigo-200">
-            Phase 4
+            Phase 5
           </span>
         </header>
 
@@ -128,6 +169,10 @@ export default function App() {
 
         {!isLoading && (
           <>
+            {/* Rule-Based Contextual Suggestions Card */}
+            <SuggestionsCard suggestions={suggestions} />
+
+            {/* Today Schedule Header */}
             <TodayHeader
               today={today}
               totalTasks={stats.total}
