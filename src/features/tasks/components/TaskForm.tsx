@@ -91,7 +91,7 @@ export const TaskForm: React.FC<TaskFormProps> = ({
       {error && (
         <div
           role="alert"
-          className="p-3 text-xs rounded-xl bg-rose-50 text-rose-700 border border-rose-200"
+          className="p-3 text-xs rounded-xl bg-rose-50 dark:bg-rose-950/50 text-rose-700 dark:text-rose-300 border border-rose-200 dark:border-rose-900"
         >
           {error}
         </div>
@@ -101,7 +101,7 @@ export const TaskForm: React.FC<TaskFormProps> = ({
       <div>
         <label
           htmlFor="task-title"
-          className="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-1.5"
+          className="block text-xs font-semibold uppercase tracking-wider text-slate-600 dark:text-slate-400 mb-1.5"
         >
           Task Description
         </label>
@@ -111,7 +111,7 @@ export const TaskForm: React.FC<TaskFormProps> = ({
           value={title}
           onChange={(e) => setTitle(e.target.value)}
           placeholder="e.g., Read CS 240 Ch. 3 or Push Day"
-          className="w-full px-3.5 py-2.5 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
+          className="w-full px-3.5 py-2.5 text-sm bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl focus:bg-white dark:focus:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
           autoFocus
           required
         />
@@ -119,7 +119,7 @@ export const TaskForm: React.FC<TaskFormProps> = ({
 
       {/* Category Pills */}
       <div>
-        <span className="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-1.5">
+        <span className="block text-xs font-semibold uppercase tracking-wider text-slate-600 dark:text-slate-400 mb-1.5">
           Category
         </span>
         <div
@@ -136,8 +136,8 @@ export const TaskForm: React.FC<TaskFormProps> = ({
               onClick={() => setCategory(cat.value)}
               className={`py-2 text-xs font-medium rounded-xl border text-center transition-all cursor-pointer focus:outline-none focus:ring-2 focus:ring-indigo-500 ${
                 category === cat.value
-                  ? 'bg-indigo-50 border-indigo-500 text-indigo-700 font-semibold shadow-2xs'
-                  : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50'
+                  ? 'bg-indigo-50 dark:bg-indigo-950/60 border-indigo-500 text-indigo-700 dark:text-indigo-300 font-semibold shadow-2xs'
+                  : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700'
               }`}
             >
               {cat.label}
@@ -148,7 +148,7 @@ export const TaskForm: React.FC<TaskFormProps> = ({
 
       {/* Priority Selector */}
       <div>
-        <span className="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-1.5">
+        <span className="block text-xs font-semibold uppercase tracking-wider text-slate-600 dark:text-slate-400 mb-1.5">
           Priority Level
         </span>
         <div
@@ -166,13 +166,13 @@ export const TaskForm: React.FC<TaskFormProps> = ({
               className={`p-2 rounded-xl border text-left transition-all cursor-pointer focus:outline-none focus:ring-2 focus:ring-indigo-500 ${
                 priority === p.value
                   ? 'bg-indigo-600 text-white border-indigo-600 shadow-xs'
-                  : 'bg-white border-slate-200 text-slate-700 hover:bg-slate-50'
+                  : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700'
               }`}
             >
               <div className="text-xs font-bold">{p.label}</div>
               <div
                 className={`text-[10px] ${
-                  priority === p.value ? 'text-indigo-100' : 'text-slate-400'
+                  priority === p.value ? 'text-indigo-100' : 'text-slate-400 dark:text-slate-500'
                 }`}
               >
                 {p.desc}
@@ -185,13 +185,13 @@ export const TaskForm: React.FC<TaskFormProps> = ({
       {/* Schedule / Recurrence & Due Date */}
       <div className="grid grid-cols-2 gap-3">
         <div>
-          <span className="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-1.5">
+          <span className="block text-xs font-semibold uppercase tracking-wider text-slate-600 dark:text-slate-400 mb-1.5">
             Recurrence
           </span>
           <div
             role="radiogroup"
             aria-label="Recurrence selection"
-            className="flex rounded-xl border border-slate-200 bg-slate-50 p-0.5"
+            className="flex rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 p-0.5"
           >
             {RECURRENCES.map((r) => (
               <button
@@ -202,8 +202,8 @@ export const TaskForm: React.FC<TaskFormProps> = ({
                 onClick={() => setRecurrence(r.value)}
                 className={`flex-1 py-1.5 text-xs font-medium rounded-lg text-center transition-all cursor-pointer focus:outline-none focus:ring-2 focus:ring-indigo-500 ${
                   recurrence === r.value
-                    ? 'bg-white text-slate-900 shadow-xs font-semibold'
-                    : 'text-slate-500 hover:text-slate-800'
+                    ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 shadow-xs font-semibold'
+                    : 'text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200'
                 }`}
               >
                 {r.label}
@@ -215,7 +215,7 @@ export const TaskForm: React.FC<TaskFormProps> = ({
         <div>
           <label
             htmlFor="task-due-date"
-            className="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-1.5"
+            className="block text-xs font-semibold uppercase tracking-wider text-slate-600 dark:text-slate-400 mb-1.5"
           >
             {recurrence === 'none' ? 'Due Date' : 'Start Date'}
           </label>
@@ -224,14 +224,14 @@ export const TaskForm: React.FC<TaskFormProps> = ({
             type="date"
             value={dueDate}
             onChange={(e) => setDueDate(e.target.value)}
-            className="w-full px-3 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
+            className="w-full px-3 py-1.5 text-xs bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl focus:bg-white dark:focus:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
             required
           />
         </div>
       </div>
 
       {/* Action Buttons */}
-      <div className="flex items-center justify-end gap-2 pt-2 border-t border-slate-100">
+      <div className="flex items-center justify-end gap-2 pt-2 border-t border-slate-100 dark:border-slate-800">
         <Button
           type="button"
           variant="secondary"

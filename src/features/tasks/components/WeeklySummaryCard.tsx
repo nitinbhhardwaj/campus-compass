@@ -4,6 +4,7 @@ import { Card } from '../../../components/Card';
 import { Badge, BadgeProps } from '../../../components/Badge';
 import { ChevronDown, ChevronUp, Trophy } from 'lucide-react';
 import { TaskCategory } from '../../../types/task';
+import { IconButton } from '../../../components/IconButton';
 
 interface WeeklySummaryCardProps {
   summary: WeeklySummary;
@@ -30,21 +31,21 @@ export const WeeklySummaryCard: React.FC<WeeklySummaryCardProps> = ({
   const [isExpanded, setIsExpanded] = useState(false);
 
   return (
-    <Card className="p-3.5 mb-4 bg-gradient-to-br from-indigo-50/50 via-white to-slate-50 border-indigo-100/80">
+    <Card className="p-3.5 mb-2 bg-gradient-to-br from-indigo-50/40 via-white to-slate-50 dark:from-slate-900 dark:via-slate-900/90 dark:to-indigo-950/20 border-indigo-100/80 dark:border-indigo-950/60">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2.5">
-          <div className="w-8 h-8 rounded-xl bg-indigo-100 text-indigo-700 flex items-center justify-center flex-shrink-0">
+          <div className="w-8 h-8 rounded-xl bg-indigo-100 dark:bg-indigo-950/70 text-indigo-700 dark:text-indigo-400 flex items-center justify-center flex-shrink-0">
             <Trophy className="w-4 h-4" />
           </div>
           <div>
             <div className="flex items-baseline gap-1.5">
-              <span className="text-xs font-bold text-slate-800">This Week</span>
-              <span className="text-[11px] text-slate-500 font-medium">
+              <span className="text-xs font-bold text-slate-800 dark:text-slate-200">This Week</span>
+              <span className="text-[11px] text-slate-500 dark:text-slate-400 font-medium">
                 ({weekStart.slice(5)} – {weekEnd.slice(5)})
               </span>
             </div>
-            <p className="text-xs text-slate-600">
-              <span className="font-bold text-indigo-600">
+            <p className="text-xs text-slate-600 dark:text-slate-400">
+              <span className="font-bold text-indigo-600 dark:text-indigo-400">
                 {summary.totalCompleted}
               </span>{' '}
               {summary.totalCompleted === 1 ? 'task completed' : 'tasks completed'}
@@ -52,19 +53,19 @@ export const WeeklySummaryCard: React.FC<WeeklySummaryCardProps> = ({
           </div>
         </div>
 
-        <button
+        <IconButton
           onClick={() => setIsExpanded(!isExpanded)}
-          className="p-1.5 text-slate-400 hover:text-slate-600 rounded-lg hover:bg-slate-100 transition-colors cursor-pointer"
-          aria-expanded={isExpanded}
           aria-label={isExpanded ? 'Collapse weekly breakdown' : 'Expand weekly breakdown'}
+          size="sm"
+          variant="ghost"
         >
           {isExpanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
-        </button>
+        </IconButton>
       </div>
 
       {isExpanded && (
-        <div className="mt-3 pt-3 border-t border-indigo-100/60">
-          <div className="text-[11px] font-semibold text-slate-500 mb-2 uppercase tracking-wider">
+        <div className="mt-3 pt-3 border-t border-indigo-100/60 dark:border-slate-800">
+          <div className="text-[11px] font-semibold text-slate-500 dark:text-slate-400 mb-2 uppercase tracking-wider">
             Completed by Category
           </div>
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
@@ -74,10 +75,10 @@ export const WeeklySummaryCard: React.FC<WeeklySummaryCardProps> = ({
               return (
                 <div
                   key={cat}
-                  className="flex items-center justify-between px-2.5 py-1.5 rounded-lg bg-white border border-slate-200/60 shadow-2xs"
+                  className="flex items-center justify-between px-2.5 py-1.5 rounded-lg bg-white dark:bg-slate-800 border border-slate-200/60 dark:border-slate-700 shadow-2xs"
                 >
                   <Badge variant={meta.variant}>{meta.label}</Badge>
-                  <span className="text-xs font-bold text-slate-700">{count}</span>
+                  <span className="text-xs font-bold text-slate-700 dark:text-slate-200">{count}</span>
                 </div>
               );
             })}
