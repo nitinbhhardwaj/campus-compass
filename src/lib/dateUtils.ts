@@ -36,7 +36,6 @@ export function getWeekRange(referenceDate: string): { startDate: string; endDat
   const [year, month, day] = referenceDate.split('-').map(Number);
   const date = new Date(year, month - 1, day);
   const dayOfWeek = date.getDay(); // 0 = Sun, 1 = Mon, ..., 6 = Sat
-  // Calculate distance from Monday (1)
   const diffToMonday = dayOfWeek === 0 ? -6 : 1 - dayOfWeek;
   const monday = new Date(year, month - 1, day + diffToMonday);
   const sunday = new Date(year, month - 1, day + diffToMonday + 6);
@@ -45,6 +44,47 @@ export function getWeekRange(referenceDate: string): { startDate: string; endDat
     startDate: formatLocalDate(monday),
     endDate: formatLocalDate(sunday),
   };
+}
+
+/**
+ * Extracts 'YYYY-MM' from a 'YYYY-MM-DD' date string.
+ */
+export function getYearMonth(dateStr: string): string {
+  return dateStr.slice(0, 7);
+}
+
+/**
+ * Returns the preceding month in 'YYYY-MM' format.
+ */
+export function getPreviousMonth(yearMonth: string): string {
+  const [year, month] = yearMonth.split('-').map(Number);
+  const date = new Date(year, month - 2, 1);
+  const y = date.getFullYear();
+  const m = String(date.getMonth() + 1).padStart(2, '0');
+  return `${y}-${m}`;
+}
+
+/**
+ * Returns the succeeding month in 'YYYY-MM' format.
+ */
+export function getNextMonth(yearMonth: string): string {
+  const [year, month] = yearMonth.split('-').map(Number);
+  const date = new Date(year, month, 1);
+  const y = date.getFullYear();
+  const m = String(date.getMonth() + 1).padStart(2, '0');
+  return `${y}-${m}`;
+}
+
+/**
+ * Formats a 'YYYY-MM' string into a friendly label (e.g. 'Nov 2026').
+ */
+export function formatMonthDisplay(yearMonth: string): string {
+  const [year, month] = yearMonth.split('-').map(Number);
+  const date = new Date(year, month - 1, 1);
+  return date.toLocaleDateString(undefined, {
+    month: 'short',
+    year: 'numeric',
+  });
 }
 
 /**
