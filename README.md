@@ -6,15 +6,15 @@
 
 ## 🏛️ Architecture & Interview Defense Guide
 
-When discussing Campus Compass in interviews, the core themes are **Separation of Concerns**, **Domain-Driven Bounded Contexts**, and **Future-Proofing without Premature Complexity**.
+When discussing Campus Compass in interviews, the core themes are **Domain-Driven Bounded Contexts**, **Pure Functional Domain Logic**, **Integer-Exact Financial Computation**, and **Future-Proof Local-First Persistence**.
 
-### 1. Swappable Async Repository Pattern (`TaskRepository` & `ProteinRepository`)
-- **Decision:** UI components and hooks interact exclusively with abstract repository interfaces returning `Promise<T>` (`LocalStorageTaskRepository` and `LocalStorageProteinRepository`).
+### 1. Swappable Async Repository Pattern (`TaskRepository`, `ProteinRepository`, `ExpenseRepository`)
+- **Decision:** UI components and hooks interact exclusively with abstract repository interfaces returning `Promise<T>` (`LocalStorageTaskRepository`, `LocalStorageProteinRepository`, and `LocalStorageExpenseRepository`).
 - **Interview Defense:** "Local-first now, Supabase later." In early development, `localStorage` provides immediate zero-config iteration. Because all repository methods return `Promise`, swapping to Supabase, IndexedDB, or an external REST API requires writing a new class implementing the interface. Zero React components or hooks require refactoring.
 
 ### 2. Pure Business Logic Engines
-- **Decision:** All filtering, sorting, recurrence rules, streaks, weekly aggregations, and nutritional metrics are 100% pure functions decoupled from React state, DOM, and `new Date()` calls.
-- **Interview Defense:** "Deterministic domain logic is trivial to test and reason about." Passing `today: string` explicitly into every pure function ensures tests never flake due to machine timezones or execution timestamps. Tests run in under 200ms using Vitest without DOM emulation overhead.
+- **Decision:** All filtering, sorting, recurrence rules, streaks, weekly aggregations, nutritional metrics, and financial budget calculations are 100% pure functions decoupled from React state, DOM, and `new Date()` calls.
+- **Interview Defense:** "Deterministic domain logic is trivial to test and reason about." Passing `today: string` or `yearMonth: string` explicitly into every pure function ensures tests never flake due to machine timezones or execution timestamps. Tests execute in under 250ms using Vitest without DOM emulation overhead.
 
 ### 3. Avoiding the UTC Date Bug (`date.toISOString()`)
 - **Decision:** Dates are standardized as local `YYYY-MM-DD` strings. We deliberately avoid `date.toISOString().split('T')[0]`.
@@ -33,7 +33,7 @@ When discussing Campus Compass in interviews, the core themes are **Separation o
 
 ### 6. Habit Streak Calculation (`computeStreak`)
 - **Decision:** Streaks are computed dynamically from `completedDates: string[]` relative to `today: string`.
-- **Interview Defense:** "Respecting the user's current day." If a student opens the app at 8:00 AM, today's workout has not yet been logged. A naive streak counter would reset to 0 because today is missing. Our pure `computeStreak` checks whether yesterday was completed: if yes, yesterday's streak is preserved as active pending today. If yesterday was missed and today is incomplete, the streak breaks to 0. Completing today restarts the streak at 1.
+- **Interview Defense:** "Respecting the user's active day." If a student opens the app at 8:00 AM, today's workout has not yet been logged. A naive streak counter would reset to 0 because today is missing. Our pure `computeStreak` checks whether yesterday was completed: if yes, yesterday's streak is preserved as active pending today. If yesterday was missed and today is incomplete, the streak breaks to 0. Completing today restarts the streak at 1.
 
 ### 7. Weekly Aggregation Helper (`getWeeklySummary`)
 - **Decision:** Given tasks and an arbitrary date range `[startDate, endDate]`, `getWeeklySummary` pure function projects completion metrics grouped by category.
@@ -43,13 +43,17 @@ When discussing Campus Compass in interviews, the core themes are **Separation o
 - **Decision:** Category filtering is computed as a pure pipeline stage: `All Tasks -> Today Filter -> Priority Sort -> Category Filter`.
 - **Interview Defense:** Composable pure function pipelines. Empty states adapt contextually: if no tasks exist in the selected category (e.g., "Gym"), the UI informs the user ("No gym tasks scheduled for today") and offers a single-click action to view all categories.
 
-### 9. Protein Tracker Module & Bounded Context Isolation (`src/features/protein`)
-- **Decision:** The protein module has its own types, pure logic, repository interface, and UI components, with **zero dependency on the tasks module**.
-- **Interview Defense:** "High cohesion, loose coupling (Domain-Driven Design)." Mixing protein tracking into the Task entity would pollute the Task model with nutritional schema (grams, body weight, presets) that do not belong to general tasks. Keeping the modules decoupled means they can be tested, refactored, or replaced independently. When the rule-based suggestion engine arrives ("low protein by evening => suggest snack"), an orchestrator or rule engine will coordinate between both modules without either module depending directly on the other.
+### 9. Bounded Context Isolation (`tasks`, `protein`, `expenses`)
+- **Decision:** The three domain modules (`tasks`, `protein`, `expenses`) reside in isolated directories under `src/features/` with **zero cross-module imports**.
+- **Interview Defense:** "Domain-Driven Design (Bounded Contexts)." Mixing expense or nutrition tracking into the Task model would create an unwieldy God Object polluted with money and macro fields. Decoupled modules allow independent maintenance, scaling, and testing. When the rule-based suggestion engine arrives in future phases ("low protein by evening => suggest snack"; "exam in 2 days => defer chores"), an application orchestrator coordinates across repositories without leaking domain logic between modules.
 
-### 10. Nutrition Calculation Engine & Presets
-- **Decision:** Default daily protein target calculated as `Math.round(bodyWeightKg * 1.6)` with optional manual user override. Presets are stored in a centralized constant file (`presets.ts`) and labeled as approximate reference estimates without prescriptive or medical advice.
-- **Interview Defense:** Mathematical purity and safety. Input validators ensure positive weights (<= 300kg) and sensible target limits (<= 500g). Display progress is capped at 100% for the visual bar, while intake sums are never artificially capped.
+### 10. Integer Paise for Financial Calculations (Why Never Floats)
+- **Decision:** All monetary amounts (`amountPaise`, `monthlyBudgetPaise`, `categoryBudgetsPaise`) are stored and computed strictly as **integer paise** (1 Rupee = 100 paise), never binary floating-point numbers. Conversion to INR is performed strictly at the display boundary.
+- **Interview Defense:** "Eliminating IEEE 754 precision bugs." Binary floating-point arithmetic cannot precisely represent base-10 fractions (e.g., `0.1 + 0.2 === 0.30000000000000004`). In financial apps, recurring float addition and subtraction lead to accumulating rounding discrepancies, broken balance checks, and off-by-one paise errors. `rupeeStringToPaise` uses string splitting and integer padding to convert inputs like `"12.5"` to `1250` paise without touching `parseFloat`.
+
+### 11. Budget Warning & Monitoring Logic
+- **Decision:** Budget status is evaluated as a pure state transition: `'ok'` (< 80%), `'warning'` (80%–100%), and `'over'` (> 100%).
+- **Interview Defense:** Contextual threshold alerts. When overall budget or any individual category budget reaches $\ge 80\%$, the UI surfaces an alert (e.g. "You've used 82% of your food budget") without preachy or financial advice text. Budget usage percentage is uncapped, providing transparency when students are over budget (e.g. 115%).
 
 ---
 
@@ -63,46 +67,34 @@ src/
 │   ├── Card.tsx
 │   └── Modal.tsx
 ├── features/
-│   ├── tasks/                  # Task domain module
-│   │   ├── components/         # Feature UI
-│   │   │   ├── CategoryFilter.tsx # Category filter chips
-│   │   │   ├── TaskForm.tsx    # Add / Edit task modal form
-│   │   │   ├── TaskItem.tsx    # Card with complete, edit, delete, streaks, badges
-│   │   │   ├── TaskList.tsx    # List container with contextual empty states
-│   │   │   ├── TodayHeader.tsx # Date, completion counter, and overdue alert
-│   │   │   └── WeeklySummaryCard.tsx # "This week" category breakdown
-│   │   ├── hooks/              # useTasks hook orchestrating state & repository operations
-│   │   │   └── useTasks.ts
-│   │   └── logic/              # Pure domain logic (0% React/DOM dependencies)
-│   │       ├── taskLogic.ts    # Filter, sort, recurrence, streaks, weekly summaries
-│   │       └── taskLogic.test.ts # 32 exhaustive Vitest unit tests
-│   └── protein/                # Protein tracking domain module (isolated bounded context)
-│       ├── constants/
-│       │   └── presets.ts      # Quick-add food presets with approximate gram values
-│       ├── types/
-│       │   └── protein.ts      # ProteinEntry, ProteinSettings, CreateProteinEntryDTO
-│       ├── logic/
-│       │   ├── proteinLogic.ts # Pure functions: total, remaining, progress, validation
-│       │   └── proteinLogic.test.ts # 17 exhaustive Vitest unit tests
-│       ├── hooks/
-│       │   └── useProtein.ts   # Custom hook connecting state and storage
+│   ├── tasks/                  # Tasks bounded context
+│   │   ├── components/         # TodayHeader, TaskList, TaskItem, TaskForm, CategoryFilter, WeeklySummaryCard
+│   │   ├── hooks/              # useTasks.ts
+│   │   └── logic/              # taskLogic.ts & taskLogic.test.ts (28 tests)
+│   ├── protein/                # Protein tracking bounded context
+│   │   ├── constants/          # presets.ts (8 food presets)
+│   │   ├── types/              # ProteinEntry, ProteinSettings
+│   │   ├── logic/              # proteinLogic.ts & proteinLogic.test.ts (17 tests)
+│   │   ├── hooks/              # useProtein.ts
+│   │   └── components/         # ProteinCard, ProteinQuickAdd, ProteinEntryList, ProteinSettingsModal
+│   └── expenses/               # Expense tracking bounded context (zero dependency on tasks/protein)
+│       ├── types/              # Expense, ExpenseSettings, ExpenseCategory
+│       ├── logic/              # expenseLogic.ts & expenseLogic.test.ts (15 tests)
+│       ├── hooks/              # useExpenses.ts
 │       └── components/
-│           ├── ProteinCard.tsx # Daily protein progress card
-│           ├── ProteinQuickAdd.tsx # Preset chips + custom entry form
-│           ├── ProteinEntryList.tsx # Today's logged items with delete action
-│           └── ProteinSettingsModal.tsx # Weight & target goal configuration
+│           ├── ExpenseCard.tsx # Spent vs budget, progress bar, warnings, category breakdown
+│           ├── ExpenseForm.tsx # Quick-add expense form (rupee input -> integer paise)
+│           ├── ExpenseList.tsx # Month's expense history with delete
+│           └── ExpenseSettingsModal.tsx # Overall and per-category budget configuration
 ├── lib/                        # Cross-cutting infrastructure
-│   ├── storage/                # Swappable async repositories
-│   │   ├── taskRepository.ts
-│   │   ├── localTaskRepository.ts
-│   │   ├── localTaskRepository.test.ts
-│   │   ├── proteinRepository.ts
-│   │   ├── localProteinRepository.ts
-│   │   └── localProteinRepository.test.ts
-│   └── dateUtils.ts            # Local timezone date formatting & day-of-week helpers
-├── types/                      # Top-level shared types
+│   ├── storage/                # Swappable async storage adapters
+│   │   ├── taskRepository.ts & localTaskRepository.ts (4 tests)
+│   │   ├── proteinRepository.ts & localProteinRepository.ts (4 tests)
+│   │   └── expenseRepository.ts & localExpenseRepository.ts (4 tests)
+│   └── dateUtils.ts            # Local timezone date & month navigation helpers
+├── types/                      # Shared top-level contracts
 │   └── task.ts
-├── App.tsx                     # Mobile-first composition container
+├── App.tsx                     # Mobile-first unified dashboard composition
 ├── main.tsx                    # React bootstrap entrypoint
 └── index.css                   # Tailwind CSS styling
 ```
@@ -112,7 +104,7 @@ src/
 ## 🧪 Testing
 
 ```bash
-# Run full unit test suite (53 tests across domain logic and storage)
+# Run full unit test suite (72 tests across all domain engines and repositories)
 npm run test
 
 # Run tests in watch mode
@@ -120,24 +112,10 @@ npm run test:watch
 ```
 
 Test coverage includes:
-- **Tasks Logic (28 tests):**
-  - Daily recurrence across multiple days (completion resets cleanly).
-  - Weekly recurrence on non-matching weekdays and prior to start date.
-  - Overdue tasks surfacing in Today, completed past tasks excluded.
-  - Priority sorting hierarchy with completed tasks anchored last.
-  - Category filtering across all tags.
-  - Weekly summary aggregations by category within date ranges.
-  - Habit streak computation (active, pending, broken, restarted).
-- **Protein Logic (17 tests):**
-  - Default goal calculation from body weight (1.6x multiplier).
-  - Accurate date-specific total intake summation without artificial caps.
-  - Remaining grams calculation (floored at 0 when reached or exceeded).
-  - Progress percentage calculation (capped at 100% for display).
-  - Entry filtering and newest-first chronological ordering.
-  - Settings input validation (positive numbers, realistic maximums).
-- **Repositories (8 tests):**
-  - `LocalStorageTaskRepository`: seed loading, async CRUD operations.
-  - `LocalStorageProteinRepository`: seed loading, async entry logging, delete, settings persistence.
+- **Tasks Logic (28 tests):** Daily recurrence, weekly recurrence, overdue tasks, priority sorting hierarchy, category filtering, weekly aggregations, streak calculation.
+- **Protein Logic (17 tests):** Weight-based goal computation, daily summation, remaining protein calculation, display progress capping, chronological sorting, settings validation.
+- **Expenses Logic (15 tests):** Float-safe string-to-paise parser (`"12.5"` $\to$ 1250, `"100"` $\to$ 10000, `"0.75"` $\to$ 75), INR formatting, monthly totals, category totals, remaining budget, uncapped budget percentages, budget status transitions (ok, warning $\ge 80\%$, over $> 100\%$), category warning detection.
+- **Repositories (12 tests):** Seed data loading, async CRUD operations for Task, Protein, and Expense LocalStorage adapters.
 
 ---
 
