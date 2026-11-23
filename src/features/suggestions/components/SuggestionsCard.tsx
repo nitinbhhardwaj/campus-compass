@@ -2,119 +2,184 @@ import React, { useState } from 'react';
 import { Suggestion, SuggestionSeverity } from '../types/suggestion';
 import { Card } from '../../../components/Card';
 import { Badge, BadgeProps } from '../../../components/Badge';
-import { Sparkles, CheckCircle2, X, Lightbulb } from 'lucide-react';
+import { IconButton } from '../../../components/IconButton';
+import {
+  Sparkles,
+  CheckCircle2,
+  X,
+  Lightbulb,
+  AlertTriangle,
+  AlertOctagon,
+  Info,
+  RotateCcw,
+} from 'lucide-react';
 
 interface SuggestionsCardProps {
   suggestions: Suggestion[];
 }
 
-const SEVERITY_BADGES: Record<
-  SuggestionSeverity,
-  { label: string; variant: BadgeProps['variant'] }
-> = {
-  warning: { label: 'Priority', variant: 'rose' },
-  nudge: { label: 'Nudge', variant: 'amber' },
-  info: { label: 'Balance', variant: 'indigo' },
+interface SeverityConfig {
+  label: string;
+  badgeVariant: BadgeProps['variant'];
+  borderAccent: string;
+  icon: React.ComponentType<{ className?: string }>;
+  iconColor: string;
+}
+
+const SEVERITY_CONFIG: Record<SuggestionSeverity, SeverityConfig> = {
+  warning: {
+    label: 'Priority',
+    badgeVariant: 'rose',
+    borderAccent: 'border-l-rose-500',
+    icon: AlertOctagon,
+    iconColor: 'text-rose-600 dark:text-rose-400',
+  },
+  nudge: {
+    label: 'Nudge',
+    badgeVariant: 'amber',
+    borderAccent: 'border-l-amber-500',
+    icon: AlertTriangle,
+    iconColor: 'text-amber-600 dark:text-amber-400',
+  },
+  info: {
+    label: 'Balance',
+    badgeVariant: 'indigo',
+    borderAccent: 'border-l-indigo-500',
+    icon: Info,
+    iconColor: 'text-indigo-600 dark:text-indigo-400',
+  },
 };
 
 export const SuggestionsCard: React.FC<SuggestionsCardProps> = ({ suggestions }) => {
   // Dismissed IDs held in component state as specified in Phase 5 requirements
   const [dismissedIds, setDismissedIds] = useState<Set<string>>(new Set());
+  const [dismissingIds, setDismissingIds] = useState<Set<string>>(new Set());
 
   const handleDismiss = (id: string) => {
-    setDismissedIds((prev) => {
-      const next = new Set(prev);
-      next.add(id);
-      return next;
-    });
+    setDismissingIds((prev) => new Set(prev).add(id));
+    // Smooth transition animation before removing from rendered DOM
+    setTimeout(() => {
+      setDismissedIds((prev) => {
+        const next = new Set(prev);
+        next.add(id);
+        return next;
+      });
+      setDismissingIds((prev) => {
+        const next = new Set(prev);
+        next.delete(id);
+        return next;
+      });
+    }, 200);
   };
 
   const handleResetDismissed = () => {
+    setDismissingIds(new Set());
     setDismissedIds(new Set());
   };
 
   const activeSuggestions = suggestions.filter((s) => !dismissedIds.has(s.id));
 
   return (
-    <Card className="p-4 mb-4 bg-gradient-to-br from-indigo-50/40 via-white to-amber-50/30 border-indigo-100/80 shadow-xs">
-      <div className="flex items-center justify-between mb-2.5">
-        <div className="flex items-center gap-2">
-          <div className="w-7 h-7 rounded-lg bg-indigo-100 text-indigo-700 flex items-center justify-center flex-shrink-0">
-            <Sparkles className="w-4 h-4" />
+    <Card className="p-4 sm:p-5 mb-4">
+      {/* Header */}
+      <div className="flex items-center justify-between mb-3.5">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-2xl bg-indigo-50 dark:bg-indigo-950/40 text-indigo-600 dark:text-indigo-400 flex items-center justify-center flex-shrink-0 border border-indigo-100 dark:border-indigo-900/40 shadow-2xs">
+            <Sparkles className="w-5 h-5" />
           </div>
           <div>
-            <h2 className="text-xs font-bold text-slate-800 tracking-tight">
+            <h2 className="text-sm font-bold text-slate-900 dark:text-slate-100 tracking-tight">
               Compass Insights & Nudges
             </h2>
+            <p className="text-xs text-slate-500 dark:text-slate-400">
+              Deterministic, explainable daily suggestions
+            </p>
           </div>
         </div>
 
         {activeSuggestions.length > 0 && (
-          <span className="text-[10px] font-bold text-indigo-700 bg-indigo-50 px-2 py-0.5 rounded-full border border-indigo-200">
+          <span className="text-xs font-bold text-indigo-700 dark:text-indigo-300 bg-indigo-50 dark:bg-indigo-950/60 px-2.5 py-1 rounded-full border border-indigo-200/80 dark:border-indigo-800/60 tabular-nums">
             {activeSuggestions.length} active
           </span>
         )}
       </div>
 
       {activeSuggestions.length === 0 ? (
-        <div className="py-3 px-3 rounded-xl bg-white/70 border border-slate-200/60 flex items-center justify-between">
-          <div className="flex items-center gap-2 text-xs text-slate-600">
-            <CheckCircle2 className="w-4 h-4 text-emerald-500 flex-shrink-0" />
-            <span className="font-medium">Nothing to adjust, you're on track.</span>
+        <div className="py-4 px-4 rounded-2xl bg-emerald-50/60 dark:bg-emerald-950/20 border border-emerald-200/60 dark:border-emerald-900/30 flex items-center justify-between">
+          <div className="flex items-center gap-2.5 text-xs text-emerald-800 dark:text-emerald-300">
+            <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400 flex-shrink-0" />
+            <span className="font-medium">All clear! You're completely on track today.</span>
           </div>
 
           {dismissedIds.size > 0 && (
             <button
               type="button"
               onClick={handleResetDismissed}
-              className="text-[11px] text-indigo-600 hover:text-indigo-800 font-semibold cursor-pointer focus:outline-none focus:ring-1 focus:ring-indigo-500 rounded px-1.5 py-0.5"
+              className="inline-flex items-center gap-1 text-xs text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-200 font-semibold cursor-pointer focus:outline-none focus:ring-2 focus:ring-indigo-500 rounded-lg px-2 py-1 min-h-[36px]"
             >
-              Reset dismissed ({dismissedIds.size})
+              <RotateCcw className="w-3.5 h-3.5" />
+              <span>Reset ({dismissedIds.size})</span>
             </button>
           )}
         </div>
       ) : (
-        <div className="flex flex-col gap-2.5" role="region" aria-label="Active Suggestions">
+        <div className="flex flex-col gap-3" role="region" aria-label="Active Suggestions">
           {activeSuggestions.map((suggestion) => {
-            const badgeMeta =
-              SEVERITY_BADGES[suggestion.severity] || SEVERITY_BADGES.info;
+            const config = SEVERITY_CONFIG[suggestion.severity] || SEVERITY_CONFIG.info;
+            const IconComponent = config.icon;
+            const isDismissing = dismissingIds.has(suggestion.id);
 
             return (
               <div
                 key={suggestion.id}
-                className="p-3 rounded-xl bg-white border border-slate-200/80 shadow-2xs transition-all hover:border-indigo-200"
+                className={`p-3.5 rounded-2xl bg-white dark:bg-slate-800/80 border border-slate-200/90 dark:border-slate-700/80 border-l-4 ${config.borderAccent} shadow-2xs transition-all duration-200 ease-out hover:shadow-xs ${
+                  isDismissing ? 'opacity-0 -translate-y-2 scale-95 pointer-events-none' : 'opacity-100 translate-y-0 scale-100'
+                }`}
               >
-                <div className="flex items-start justify-between gap-2 mb-1.5">
-                  <div className="flex items-center gap-1.5 flex-wrap">
-                    <Badge variant={badgeMeta.variant} className="text-[10px] px-1.5 py-0">
-                      {badgeMeta.label}
+                {/* Title & Severity Badge & Dismiss */}
+                <div className="flex items-start justify-between gap-2 mb-2">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <Badge variant={config.badgeVariant} className="text-[10px] px-2 py-0.5">
+                      {config.label}
                     </Badge>
-                    <span className="text-xs font-bold text-slate-900">
-                      {suggestion.title}
-                    </span>
+                    <div className="flex items-center gap-1.5">
+                      <IconComponent className={`w-3.5 h-3.5 ${config.iconColor} flex-shrink-0`} />
+                      <span className="text-xs font-bold text-slate-900 dark:text-slate-100">
+                        {suggestion.title}
+                      </span>
+                    </div>
                   </div>
 
-                  {/* Accessible 44px hit-target dismiss button */}
-                  <button
-                    type="button"
+                  {/* Accessible 44px touch target dismiss */}
+                  <IconButton
+                    variant="ghost"
+                    size="sm"
                     onClick={() => handleDismiss(suggestion.id)}
-                    className="relative p-1.5 text-slate-400 hover:text-slate-600 rounded-lg hover:bg-slate-100 transition-colors cursor-pointer focus:outline-none focus:ring-2 focus:ring-indigo-500 after:content-[''] after:absolute after:-inset-2"
                     aria-label={`Dismiss suggestion: ${suggestion.title}`}
+                    className="text-slate-400 hover:text-slate-700 dark:text-slate-500 dark:hover:text-slate-200 -mt-1 -mr-1"
                   >
                     <X className="w-3.5 h-3.5" />
-                  </button>
+                  </IconButton>
                 </div>
 
-                {/* Plain Explainable Reason */}
-                <p className="text-[11px] text-slate-600 mb-2 leading-relaxed">
+                {/* Plain Explainable Reason in Muted Text */}
+                <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed mb-3">
                   {suggestion.reason}
                 </p>
 
-                {/* Concrete Planning Action */}
+                {/* Concrete Planning Action as an Interactive Button */}
                 {suggestion.action && (
-                  <div className="flex items-start gap-1.5 p-2 rounded-lg bg-slate-50 border border-slate-200/70 text-[11px] font-medium text-slate-800">
-                    <Lightbulb className="w-3.5 h-3.5 text-amber-500 flex-shrink-0 mt-0.5" />
-                    <span>{suggestion.action}</span>
+                  <div className="pt-2.5 border-t border-slate-100 dark:border-slate-750 flex items-center justify-between gap-2 flex-wrap">
+                    <span className="text-[11px] font-medium text-slate-400 dark:text-slate-500">
+                      Recommendation
+                    </span>
+                    <button
+                      type="button"
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-xl bg-indigo-50 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 border border-indigo-200/80 dark:border-indigo-800/60 hover:bg-indigo-100 dark:hover:bg-indigo-900/80 transition-colors cursor-pointer focus:outline-none focus:ring-2 focus:ring-indigo-500 min-h-[36px] shadow-2xs"
+                    >
+                      <Lightbulb className="w-3.5 h-3.5 text-amber-500 flex-shrink-0" />
+                      <span>{suggestion.action}</span>
+                    </button>
                   </div>
                 )}
               </div>
