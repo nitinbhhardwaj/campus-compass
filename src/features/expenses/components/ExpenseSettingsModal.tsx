@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { ExpenseSettings, ExpenseCategory } from '../types/expense';
 import { rupeeStringToPaise, formatPaiseToRupees } from '../logic/expenseLogic';
 import { Modal } from '../../../components/Modal';
-import { Button } from '../../../components/Button';
 
 interface ExpenseSettingsModalProps {
   isOpen: boolean;
@@ -14,9 +13,9 @@ interface ExpenseSettingsModalProps {
 const CATEGORIES: { label: string; key: ExpenseCategory }[] = [
   { label: 'Food', key: 'food' },
   { label: 'Travel', key: 'travel' },
-  { label: 'Rent / Accommodation', key: 'rent' },
+  { label: 'Rent', key: 'rent' },
   { label: 'Subscriptions', key: 'subscriptions' },
-  { label: 'Study & Academics', key: 'study' },
+  { label: 'Study', key: 'study' },
   { label: 'Other', key: 'other' },
 ];
 
@@ -85,75 +84,99 @@ export const ExpenseSettingsModal: React.FC<ExpenseSettingsModalProps> = ({
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} title="Monthly Budget Settings">
-      <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+      <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
         {error && (
-          <div role="alert" className="p-3 text-xs rounded-xl bg-rose-50 dark:bg-rose-950/40 text-rose-700 dark:text-rose-300 border border-rose-200 dark:border-rose-900/50">
+          <div className="warn" role="alert">
             {error}
           </div>
         )}
 
         {/* Overall Monthly Budget */}
         <div>
-          <label htmlFor="overall-monthly-budget" className="block text-xs font-semibold uppercase tracking-wider text-slate-600 dark:text-slate-400 mb-1">
+          <label htmlFor="overall-monthly-budget" style={{ display: 'block', fontSize: '13px', fontWeight: 600, color: 'var(--muted)', marginBottom: '4px' }}>
             Overall Monthly Budget (₹ INR)
           </label>
-          <div className="relative">
-            <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-sm font-bold text-slate-400 dark:text-slate-500">
-              ₹
-            </span>
-            <input
-              id="overall-monthly-budget"
-              type="text"
-              inputMode="decimal"
-              value={monthlyInput}
-              onChange={(e) => setMonthlyInput(e.target.value)}
-              className="w-full pl-8 pr-3.5 py-2.5 text-sm font-semibold tabular-nums bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-slate-100 rounded-xl focus:bg-white dark:focus:bg-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-              required
-            />
-          </div>
-          <p className="mt-1 text-[11px] text-slate-400 dark:text-slate-500">
-            Current: <span className="tabular-nums font-semibold">{formatPaiseToRupees(currentSettings.monthlyBudgetPaise)}</span>
+          <input
+            id="overall-monthly-budget"
+            type="text"
+            inputMode="decimal"
+            value={monthlyInput}
+            onChange={(e) => setMonthlyInput(e.target.value)}
+            required
+            style={{
+              width: '100%',
+              padding: '8px 12px',
+              border: '2px solid var(--ink)',
+              borderRadius: '4px',
+              background: 'var(--surface)',
+              color: 'var(--text)',
+              font: '600 15px "Hanken Grotesk", sans-serif',
+            }}
+          />
+          <p className="sub" style={{ margin: '4px 0 0' }}>
+            Current: {formatPaiseToRupees(currentSettings.monthlyBudgetPaise)}
           </p>
         </div>
 
         {/* Optional Category Budgets */}
-        <div className="p-3.5 bg-slate-50 dark:bg-slate-800/40 rounded-2xl border border-slate-200/80 dark:border-slate-800">
-          <span className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-2.5">
+        <div style={{ padding: '14px', border: '1px dashed var(--line)', borderRadius: '4px', background: 'var(--paper)' }}>
+          <span style={{ display: 'block', fontSize: '13px', fontWeight: 600, color: 'var(--text)', marginBottom: '10px' }}>
             Per-Category Budgets (Optional)
           </span>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: '10px' }}>
             {CATEGORIES.map((cat) => (
               <div key={cat.key}>
-                <label htmlFor={`budget-${cat.key}`} className="block text-[11px] font-medium text-slate-600 dark:text-slate-400 mb-1">
+                <label htmlFor={`budget-${cat.key}`} style={{ display: 'block', fontSize: '12px', color: 'var(--muted)', marginBottom: '2px' }}>
                   {cat.label}
                 </label>
-                <div className="relative">
-                  <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-xs font-bold text-slate-400 dark:text-slate-500">
-                    ₹
-                  </span>
-                  <input
-                    id={`budget-${cat.key}`}
-                    type="text"
-                    inputMode="decimal"
-                    placeholder="None"
-                    value={categoryInputs[cat.key]}
-                    onChange={(e) => handleCategoryChange(cat.key, e.target.value)}
-                    className="w-full pl-6 pr-2.5 py-1.5 text-xs tabular-nums bg-white dark:bg-slate-900/80 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-slate-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                  />
-                </div>
+                <input
+                  id={`budget-${cat.key}`}
+                  type="text"
+                  inputMode="decimal"
+                  placeholder="None"
+                  value={categoryInputs[cat.key]}
+                  onChange={(e) => handleCategoryChange(cat.key, e.target.value)}
+                  style={{
+                    width: '100%',
+                    padding: '6px 8px',
+                    border: '1px solid var(--ink)',
+                    borderRadius: '4px',
+                    background: 'var(--surface)',
+                    color: 'var(--text)',
+                    font: '13px "Hanken Grotesk"',
+                  }}
+                />
               </div>
             ))}
           </div>
         </div>
 
         {/* Actions */}
-        <div className="flex items-center justify-end gap-2 pt-2 border-t border-slate-100 dark:border-slate-800">
-          <Button type="button" variant="secondary" size="md" onClick={onClose} disabled={isSubmitting}>
+        <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px', marginTop: '6px' }}>
+          <button
+            type="button"
+            onClick={onClose}
+            disabled={isSubmitting}
+            style={{
+              border: 0,
+              background: 'none',
+              color: 'var(--muted)',
+              font: '600 14px "Hanken Grotesk"',
+              padding: '0 12px',
+              cursor: 'pointer',
+              minHeight: '44px',
+            }}
+          >
             Cancel
-          </Button>
-          <Button type="submit" variant="primary" size="md" disabled={isSubmitting}>
+          </button>
+          <button
+            type="submit"
+            disabled={isSubmitting}
+            className="chip active"
+            style={{ minHeight: '44px' }}
+          >
             {isSubmitting ? 'Saving...' : 'Save Budgets'}
-          </Button>
+          </button>
         </div>
       </form>
     </Modal>

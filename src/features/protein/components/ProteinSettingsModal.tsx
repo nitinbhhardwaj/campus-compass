@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { ProteinSettings } from '../types/protein';
 import { validateProteinSettings, defaultGoalFromWeight } from '../logic/proteinLogic';
 import { Modal } from '../../../components/Modal';
-import { Button } from '../../../components/Button';
 
 interface ProteinSettingsModalProps {
   isOpen: boolean;
@@ -76,16 +75,16 @@ export const ProteinSettingsModal: React.FC<ProteinSettingsModalProps> = ({
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} title="Protein Target Settings">
-      <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+      <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
         {errors.form && (
-          <div role="alert" className="p-3 text-xs rounded-xl bg-rose-50 dark:bg-rose-950/50 text-rose-700 dark:text-rose-300 border border-rose-200 dark:border-rose-900">
+          <div className="warn" role="alert">
             {errors.form}
           </div>
         )}
 
         {/* Body Weight Input */}
         <div>
-          <label htmlFor="protein-body-weight" className="block text-xs font-semibold uppercase tracking-wider text-slate-600 dark:text-slate-400 mb-1.5">
+          <label htmlFor="protein-body-weight" style={{ display: 'block', fontSize: '13px', fontWeight: 600, color: 'var(--muted)', marginBottom: '4px' }}>
             Body Weight (kg)
           </label>
           <input
@@ -96,27 +95,34 @@ export const ProteinSettingsModal: React.FC<ProteinSettingsModalProps> = ({
             max="300"
             value={weightInput}
             onChange={(e) => handleWeightChange(e.target.value)}
-            className="w-full px-3.5 py-2.5 text-sm bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl focus:bg-white dark:focus:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500"
             required
+            style={{
+              width: '100%',
+              padding: '8px 12px',
+              border: '2px solid var(--ink)',
+              borderRadius: '4px',
+              background: 'var(--surface)',
+              color: 'var(--text)',
+              font: '600 15px "Hanken Grotesk", sans-serif',
+            }}
           />
           {errors.bodyWeightKg && (
-            <p className="mt-1 text-xs text-rose-600 dark:text-rose-400 font-medium">{errors.bodyWeightKg}</p>
+            <p className="warn" style={{ marginTop: '4px' }}>{errors.bodyWeightKg}</p>
           )}
-          <p className="mt-1 text-[11px] text-slate-400 dark:text-slate-500">
-            Standard baseline multiplier is 1.6g of protein per kg of body weight.
+          <p className="sub" style={{ margin: '4px 0 0' }}>
+            Standard multiplier is 1.6g protein per kg of body weight.
           </p>
         </div>
 
         {/* Goal Calculation & Custom Override */}
-        <div className="p-3 bg-slate-50 dark:bg-slate-800/80 rounded-2xl border border-slate-200/80 dark:border-slate-700">
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-xs font-semibold text-slate-700 dark:text-slate-300">Daily Target (grams)</span>
-            <label className="flex items-center gap-1.5 text-xs text-slate-500 dark:text-slate-400 cursor-pointer">
+        <div style={{ padding: '14px', border: '1px dashed var(--line)', borderRadius: '4px', background: 'var(--paper)' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+            <span style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text)' }}>Daily Target (grams)</span>
+            <label style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '13px', cursor: 'pointer' }}>
               <input
                 type="checkbox"
                 checked={isManualOverride}
                 onChange={(e) => handleOverrideToggle(e.target.checked)}
-                className="rounded border-slate-300 dark:border-slate-600 text-indigo-600 focus:ring-indigo-500 cursor-pointer"
               />
               <span>Custom Target</span>
             </label>
@@ -130,31 +136,54 @@ export const ProteinSettingsModal: React.FC<ProteinSettingsModalProps> = ({
             disabled={!isManualOverride}
             value={goalInput}
             onChange={(e) => setGoalInput(e.target.value)}
-            className={`w-full px-3.5 py-2 text-sm rounded-xl border transition-all ${
-              isManualOverride
-                ? 'bg-white dark:bg-slate-900 border-slate-300 dark:border-slate-600 focus:outline-none focus:ring-2 focus:ring-indigo-500'
-                : 'bg-slate-100 dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-500 cursor-not-allowed'
-            }`}
             required
+            style={{
+              width: '100%',
+              padding: '8px 12px',
+              border: '2px solid var(--ink)',
+              borderRadius: '4px',
+              background: isManualOverride ? 'var(--surface)' : 'var(--paper)',
+              color: 'var(--text)',
+              font: '600 15px "Hanken Grotesk", sans-serif',
+              opacity: isManualOverride ? 1 : 0.6,
+            }}
           />
           {errors.goalGrams && (
-            <p className="mt-1 text-xs text-rose-600 dark:text-rose-400 font-medium">{errors.goalGrams}</p>
+            <p className="warn" style={{ marginTop: '4px' }}>{errors.goalGrams}</p>
           )}
           {!isManualOverride && (
-            <p className="mt-1 text-[11px] text-slate-400 dark:text-slate-500">
+            <p className="sub" style={{ margin: '4px 0 0' }}>
               Auto-calculated from weight: {Math.round(parseFloat(weightInput || '0') * 1.6) || 0}g/day
             </p>
           )}
         </div>
 
         {/* Action Buttons */}
-        <div className="flex items-center justify-end gap-2 pt-2 border-t border-slate-100 dark:border-slate-800">
-          <Button type="button" variant="secondary" size="md" onClick={onClose} disabled={isSubmitting}>
+        <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px', marginTop: '6px' }}>
+          <button
+            type="button"
+            onClick={onClose}
+            disabled={isSubmitting}
+            style={{
+              border: 0,
+              background: 'none',
+              color: 'var(--muted)',
+              font: '600 14px "Hanken Grotesk"',
+              padding: '0 12px',
+              cursor: 'pointer',
+              minHeight: '44px',
+            }}
+          >
             Cancel
-          </Button>
-          <Button type="submit" variant="primary" size="md" disabled={isSubmitting}>
+          </button>
+          <button
+            type="submit"
+            disabled={isSubmitting}
+            className="chip active"
+            style={{ minHeight: '44px' }}
+          >
             {isSubmitting ? 'Saving...' : 'Save Settings'}
-          </Button>
+          </button>
         </div>
       </form>
     </Modal>

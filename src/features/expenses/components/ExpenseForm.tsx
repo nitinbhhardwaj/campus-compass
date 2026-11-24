@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { CreateExpenseDTO, ExpenseCategory } from '../types/expense';
 import { rupeeStringToPaise } from '../logic/expenseLogic';
-import { Button } from '../../../components/Button';
 
 interface ExpenseFormProps {
   initialDate: string;
@@ -71,61 +70,69 @@ export const ExpenseForm: React.FC<ExpenseFormProps> = ({
   };
 
   return (
-    <form onSubmit={handleSubmit} className="flex flex-col gap-3.5">
+    <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
       {error && (
-        <div role="alert" className="p-3 text-xs rounded-xl bg-rose-50 dark:bg-rose-950/40 text-rose-700 dark:text-rose-300 border border-rose-200 dark:border-rose-900/50">
+        <div className="warn" role="alert">
           {error}
         </div>
       )}
 
-      {/* Amount Input (Rupees) */}
+      {/* Amount Input */}
       <div>
-        <label htmlFor="expense-amount" className="block text-xs font-semibold uppercase tracking-wider text-slate-600 dark:text-slate-400 mb-1">
+        <label htmlFor="expense-amount" style={{ display: 'block', fontSize: '13px', fontWeight: 600, color: 'var(--muted)', marginBottom: '4px' }}>
           Amount (₹ INR)
         </label>
-        <div className="relative">
-          <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-sm font-bold text-slate-400 dark:text-slate-500">
-            ₹
-          </span>
-          <input
-            id="expense-amount"
-            type="text"
-            inputMode="decimal"
-            placeholder="e.g. 250 or 12.50"
-            value={rupeesInput}
-            onChange={(e) => setRupeesInput(e.target.value)}
-            className="w-full pl-8 pr-3.5 py-2.5 text-sm font-semibold tabular-nums bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-slate-100 rounded-xl focus:bg-white dark:focus:bg-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-            autoFocus
-            required
-          />
-        </div>
-        <p className="mt-1 text-[10px] text-slate-400 dark:text-slate-500">
-          Stored accurately as integer paise without floating-point errors.
-        </p>
+        <input
+          id="expense-amount"
+          type="text"
+          inputMode="decimal"
+          placeholder="e.g. 250 or 12.50"
+          value={rupeesInput}
+          onChange={(e) => setRupeesInput(e.target.value)}
+          required
+          autoFocus
+          style={{
+            width: '100%',
+            padding: '8px 12px',
+            border: '2px solid var(--ink)',
+            borderRadius: '4px',
+            background: 'var(--surface)',
+            color: 'var(--text)',
+            font: '600 15px "Hanken Grotesk", sans-serif',
+          }}
+        />
       </div>
 
       {/* Description / Note */}
       <div>
-        <label htmlFor="expense-note" className="block text-xs font-semibold uppercase tracking-wider text-slate-600 dark:text-slate-400 mb-1">
+        <label htmlFor="expense-note" style={{ display: 'block', fontSize: '13px', fontWeight: 600, color: 'var(--muted)', marginBottom: '4px' }}>
           Description
         </label>
         <input
           id="expense-note"
           type="text"
-          placeholder="e.g. Canteen lunch, metro pass, textbook"
+          placeholder="e.g. Mess lunch, metro card, notebook"
           value={note}
           onChange={(e) => setNote(e.target.value)}
-          className="w-full px-3.5 py-2 text-sm bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-slate-100 rounded-xl focus:bg-white dark:focus:bg-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-500"
           required
+          style={{
+            width: '100%',
+            padding: '8px 12px',
+            border: '2px solid var(--ink)',
+            borderRadius: '4px',
+            background: 'var(--surface)',
+            color: 'var(--text)',
+            font: '14px "Hanken Grotesk", sans-serif',
+          }}
         />
       </div>
 
       {/* Category Selection */}
       <div>
-        <span className="block text-xs font-semibold uppercase tracking-wider text-slate-600 dark:text-slate-400 mb-1">
+        <span style={{ display: 'block', fontSize: '13px', fontWeight: 600, color: 'var(--muted)', marginBottom: '6px' }}>
           Category
         </span>
-        <div role="radiogroup" aria-label="Expense Category" className="grid grid-cols-3 gap-1.5">
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }} role="radiogroup" aria-label="Expense Category">
           {CATEGORIES.map((cat) => (
             <button
               key={cat.value}
@@ -133,11 +140,8 @@ export const ExpenseForm: React.FC<ExpenseFormProps> = ({
               role="radio"
               aria-checked={category === cat.value}
               onClick={() => setCategory(cat.value)}
-              className={`py-2 px-2 text-xs font-medium rounded-xl border text-center transition-all cursor-pointer min-h-[44px] flex items-center justify-center focus:outline-none focus:ring-2 focus:ring-indigo-500 ${
-                category === cat.value
-                  ? 'bg-indigo-50 dark:bg-indigo-950/60 border-indigo-500 dark:border-indigo-500/80 text-indigo-700 dark:text-indigo-300 font-semibold shadow-2xs'
-                  : 'bg-white dark:bg-slate-800/80 border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800'
-              }`}
+              className={`chip ${category === cat.value ? 'active' : ''}`}
+              style={{ minHeight: '36px', padding: '0 12px', fontSize: '13px' }}
             >
               {cat.label}
             </button>
@@ -147,7 +151,7 @@ export const ExpenseForm: React.FC<ExpenseFormProps> = ({
 
       {/* Date */}
       <div>
-        <label htmlFor="expense-date" className="block text-xs font-semibold uppercase tracking-wider text-slate-600 dark:text-slate-400 mb-1">
+        <label htmlFor="expense-date" style={{ display: 'block', fontSize: '13px', fontWeight: 600, color: 'var(--muted)', marginBottom: '4px' }}>
           Date
         </label>
         <input
@@ -155,21 +159,47 @@ export const ExpenseForm: React.FC<ExpenseFormProps> = ({
           type="date"
           value={date}
           onChange={(e) => setDate(e.target.value)}
-          className="w-full px-3.5 py-2 text-xs bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-slate-100 rounded-xl focus:bg-white dark:focus:bg-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 min-h-[44px]"
           required
+          style={{
+            width: '100%',
+            padding: '8px 12px',
+            border: '2px solid var(--ink)',
+            borderRadius: '4px',
+            background: 'var(--surface)',
+            color: 'var(--text)',
+            font: '14px "Hanken Grotesk", sans-serif',
+          }}
         />
       </div>
 
       {/* Actions */}
-      <div className="flex items-center justify-end gap-2 pt-2 border-t border-slate-100 dark:border-slate-800">
+      <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px', marginTop: '6px' }}>
         {onClose && (
-          <Button type="button" variant="secondary" size="md" onClick={onClose} disabled={isSubmitting}>
+          <button
+            type="button"
+            onClick={onClose}
+            disabled={isSubmitting}
+            style={{
+              border: 0,
+              background: 'none',
+              color: 'var(--muted)',
+              font: '600 14px "Hanken Grotesk"',
+              padding: '0 12px',
+              cursor: 'pointer',
+              minHeight: '44px',
+            }}
+          >
             Cancel
-          </Button>
+          </button>
         )}
-        <Button type="submit" variant="primary" size="md" disabled={isSubmitting}>
+        <button
+          type="submit"
+          disabled={isSubmitting}
+          className="chip active"
+          style={{ minHeight: '44px' }}
+        >
           {isSubmitting ? 'Recording...' : 'Add Expense'}
-        </Button>
+        </button>
       </div>
     </form>
   );

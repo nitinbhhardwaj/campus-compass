@@ -17,10 +17,11 @@ import { formatMonthDisplay } from './lib/dateUtils';
 import { buildDaySnapshot } from './app/buildDaySnapshot';
 import { generateSuggestions } from './features/suggestions/logic/engine';
 import { SuggestionsCard } from './features/suggestions/components/SuggestionsCard';
-import { AppHeader } from './components/AppHeader';
-import { BottomNav, MobileTab } from './components/BottomNav';
+import { useTheme } from './lib/theme';
 
 export default function App() {
+  const { theme, toggleTheme } = useTheme();
+
   const {
     tasks,
     filteredTasks,
@@ -71,7 +72,6 @@ export default function App() {
     error: expenseError,
   } = useExpenses(undefined, today);
 
-  const [mobileTab, setMobileTab] = useState<MobileTab>('today');
   const [isAddTaskModalOpen, setIsAddTaskModalOpen] = useState(false);
   const [taskToEdit, setTaskToEdit] = useState<Task | null>(null);
   const [isProteinSettingsOpen, setIsProteinSettingsOpen] = useState(false);
@@ -132,175 +132,179 @@ export default function App() {
     return generateSuggestions(daySnapshot);
   }, [daySnapshot]);
 
+  // Formatted date matching mockup: "Monday, 23 November"
+  const formattedDate = useMemo(() => {
+    if (!today) return '';
+    const [year, month, day] = today.split('-').map(Number);
+    const d = new Date(year, month - 1, day);
+    return d.toLocaleDateString('en-US', {
+      weekday: 'long',
+      day: 'numeric',
+      month: 'long',
+    });
+  }, [today]);
+
+  const headline = useMemo(() => {
+    const count = suggestions.length;
+    if (count === 0) return "You're completely on track today.";
+    if (count === 1) return "One thing can't wait today.";
+    if (count === 2) return "Two things can’t wait today.";
+    return `${count} things can't wait today.`;
+  }, [suggestions.length]);
+
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 flex flex-col items-center">
-      {/* Responsive layout: Single-column on mobile, 2-column bento on desktop */}
-      <main className="w-full max-w-5xl px-4 py-6 sm:px-6 sm:py-8 pb-24 lg:pb-12 flex-1">
-        {/* Personalized Greeting Header & Theme Switcher */}
-        <AppHeader today={today} hour={currentHour} userName="Nitin" />
+    <>
+      {/* Theme Toggle Button matching mockup */}
+      <button
+        className="toggle"
+        id="theme"
+        onClick={toggleTheme}
+        aria-label="Switch light or dark theme"
+      >
+        Theme: {theme}
+      </button>
+
+      <div className="wrap">
+        <p className="date">{formattedDate}</p>
+        <h1>{headline}</h1>
 
         {/* Global Loading Feedback */}
         {isLoading && (
-          <div className="py-12 text-center text-xs text-slate-500 dark:text-slate-400">
+          <div style={{ padding: '24px 0', color: 'var(--muted)', fontSize: '14px' }}>
             Loading your student dashboard...
           </div>
         )}
 
         {/* Global Error Banner */}
         {combinedError && (
-          <div role="alert" className="mb-4 p-3 rounded-xl bg-rose-50 dark:bg-rose-950/50 text-rose-700 dark:text-rose-300 text-xs border border-rose-200 dark:border-rose-900">
+          <div className="warn" role="alert" style={{ margin: '14px 0' }}>
             {combinedError}
           </div>
         )}
 
-        {!isLoading && (
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-            {/* Left Column (Desktop: 7 cols) -> Insights & Agenda */}
-            <div className={`lg:col-span-7 flex flex-col gap-6 ${mobileTab !== 'today' && mobileTab !== 'insights' ? 'hidden lg:flex' : ''}`}>
-              {/* Contextual Nudges (Visible on desktop or when 'insights' / 'today' selected on mobile) */}
-              <div className={`${mobileTab === 'today' ? 'block' : mobileTab === 'insights' ? 'block' : 'hidden lg:block'}`}>
-                <SuggestionsCard suggestions={suggestions} />
-              </div>
+        {/* Highlighter Notes for Suggestions */}
+        <SuggestionsCard suggestions={suggestions} />
 
-              {/* Tasks Agenda & Filtering */}
-              {(mobileTab === 'today' || mobileTab === 'insights') && (
-                <section aria-label="Today Schedule" className="flex flex-col gap-4">
-                  <TodayHeader
-                    today={today}
-                    totalTasks={stats.total}
-                    completedTasks={stats.completed}
-                    overdueCount={stats.overdueCount}
-                    completionPercentage={stats.percentage}
-                    onOpenAddModal={handleOpenAddTaskModal}
-                  />
+        {/* 2-Column Responsive Grid matching mockup */}
+        <div className="grid">
+          {/* Left Column: Your day rail */}
+          <section aria-labelledby="day">
+            <TodayHeader
+              today={today}
+              totalTasks={stats.total}
+              completedTasks={stats.completed}
+              overdueCount={stats.overdueCount}
+              completionPercentage={stats.percentage}
+              onOpenAddModal={handleOpenAddTaskModal}
+            />
 
-                  <WeeklySummaryCard
-                    summary={weeklySummary}
-                    weekStart={weekRange.startDate}
-                    weekEnd={weekRange.endDate}
-                  />
+            <WeeklySummaryCard
+              summary={weeklySummary}
+              weekStart={weekRange.startDate}
+              weekEnd={weekRange.endDate}
+            />
 
-                  <CategoryFilter
-                    selected={categoryFilter}
-                    onChange={setCategoryFilter}
-                    categoryCounts={categoryCounts}
-                  />
+            <CategoryFilter
+              selected={categoryFilter}
+              onChange={setCategoryFilter}
+              categoryCounts={categoryCounts}
+            />
 
-                  <TaskList
-                    tasks={filteredTasks}
-                    today={today}
-                    categoryFilter={categoryFilter}
-                    onClearCategoryFilter={() => setCategoryFilter('all')}
-                    onToggle={toggleTask}
-                    onEdit={handleOpenEditTaskModal}
-                    onDelete={deleteTask}
-                    onOpenAddModal={handleOpenAddTaskModal}
-                  />
-                </section>
-              )}
-            </div>
+            <TaskList
+              tasks={filteredTasks}
+              today={today}
+              categoryFilter={categoryFilter}
+              onClearCategoryFilter={() => setCategoryFilter('all')}
+              onToggle={toggleTask}
+              onEdit={handleOpenEditTaskModal}
+              onDelete={deleteTask}
+              onOpenAddModal={handleOpenAddTaskModal}
+            />
+          </section>
 
-            {/* Right Column (Desktop: 5 cols) -> Nutrition & Finances */}
-            <div className={`lg:col-span-5 flex flex-col gap-6 ${mobileTab === 'insights' ? 'hidden lg:flex' : mobileTab === 'today' ? 'hidden lg:flex' : ''}`}>
-              {/* Daily Protein Tracker */}
-              {(mobileTab === 'protein' || mobileTab === 'today') && (
-                <div className={`${mobileTab === 'protein' ? 'block' : 'hidden lg:block'}`}>
-                  <ProteinCard
-                    today={today}
-                    totalGrams={proteinTotal}
-                    goalGrams={proteinSettings.goalGrams}
-                    remainingGrams={proteinRemaining}
-                    progress={proteinProgress}
-                    todayEntries={todayProteinEntries}
-                    onAddEntry={async (dto) => {
-                      await addProteinEntry(dto);
-                    }}
-                    onDeleteEntry={async (id) => {
-                      await deleteProteinEntry(id);
-                    }}
-                    onOpenSettings={() => setIsProteinSettingsOpen(true)}
-                  />
-                </div>
-              )}
+          {/* Right Column: Side cards (Protein bottle & Expense ledger) */}
+          <div className="side">
+            <ProteinCard
+              today={today}
+              totalGrams={proteinTotal}
+              goalGrams={proteinSettings.goalGrams}
+              remainingGrams={proteinRemaining}
+              progress={proteinProgress}
+              todayEntries={todayProteinEntries}
+              onAddEntry={async (dto) => {
+                await addProteinEntry(dto);
+              }}
+              onDeleteEntry={async (id) => {
+                await deleteProteinEntry(id);
+              }}
+              onOpenSettings={() => setIsProteinSettingsOpen(true)}
+            />
 
-              {/* Monthly Expense Tracker */}
-              {(mobileTab === 'money' || mobileTab === 'today') && (
-                <div className={`${mobileTab === 'money' ? 'block' : 'hidden lg:block'}`}>
-                  <ExpenseCard
-                    selectedMonth={selectedMonth}
-                    selectedMonthDisplay={formatMonthDisplay(selectedMonth)}
-                    totalSpentPaise={totalSpentPaise}
-                    monthlyBudgetPaise={expenseSettings.monthlyBudgetPaise}
-                    remainingBudgetPaise={remainingBudgetPaise}
-                    usedPercent={usedPercent}
-                    status={expenseStatus}
-                    categoryTotals={expenseCategoryTotals}
-                    categoryWarnings={expenseCategoryWarnings}
-                    monthExpenses={monthExpenses}
-                    today={today}
-                    onAddExpense={async (dto) => {
-                      await addExpense(dto);
-                    }}
-                    onDeleteExpense={async (id) => {
-                      await deleteExpense(id);
-                    }}
-                    onPreviousMonth={goToPreviousMonth}
-                    onNextMonth={goToNextMonth}
-                    onOpenSettings={() => setIsExpenseSettingsOpen(true)}
-                  />
-                </div>
-              )}
-            </div>
+            <ExpenseCard
+              selectedMonth={selectedMonth}
+              selectedMonthDisplay={formatMonthDisplay(selectedMonth)}
+              totalSpentPaise={totalSpentPaise}
+              monthlyBudgetPaise={expenseSettings.monthlyBudgetPaise}
+              remainingBudgetPaise={remainingBudgetPaise}
+              usedPercent={usedPercent}
+              status={expenseStatus}
+              categoryTotals={expenseCategoryTotals}
+              categoryWarnings={expenseCategoryWarnings}
+              monthExpenses={monthExpenses}
+              today={today}
+              onAddExpense={async (dto) => {
+                await addExpense(dto);
+              }}
+              onDeleteExpense={async (id) => {
+                await deleteExpense(id);
+              }}
+              onPreviousMonth={goToPreviousMonth}
+              onNextMonth={goToNextMonth}
+              onOpenSettings={() => setIsExpenseSettingsOpen(true)}
+            />
           </div>
-        )}
+        </div>
+      </div>
 
-        {/* Modal for adding / editing tasks */}
-        <Modal
-          isOpen={isAddTaskModalOpen}
+      {/* Modal for adding / editing tasks */}
+      <Modal
+        isOpen={isAddTaskModalOpen}
+        onClose={handleCloseTaskModal}
+        title={taskToEdit ? 'Edit Task' : 'New Task'}
+      >
+        <TaskForm
+          initialDueDate={today}
+          taskToEdit={taskToEdit}
+          onSubmit={async (dto) => {
+            if (taskToEdit) {
+              await updateTask(taskToEdit.id, dto);
+            } else {
+              await addTask(dto);
+            }
+          }}
           onClose={handleCloseTaskModal}
-          title={taskToEdit ? 'Edit Task' : 'New Task'}
-        >
-          <TaskForm
-            initialDueDate={today}
-            taskToEdit={taskToEdit}
-            onSubmit={async (dto) => {
-              if (taskToEdit) {
-                await updateTask(taskToEdit.id, dto);
-              } else {
-                await addTask(dto);
-              }
-            }}
-            onClose={handleCloseTaskModal}
-          />
-        </Modal>
-
-        {/* Modal for Protein Settings */}
-        <ProteinSettingsModal
-          isOpen={isProteinSettingsOpen}
-          currentSettings={proteinSettings}
-          onSave={async (newSettings) => {
-            await updateProteinSettings(newSettings);
-          }}
-          onClose={() => setIsProteinSettingsOpen(false)}
         />
+      </Modal>
 
-        {/* Modal for Expense Budget Settings */}
-        <ExpenseSettingsModal
-          isOpen={isExpenseSettingsOpen}
-          currentSettings={expenseSettings}
-          onSave={async (newSettings) => {
-            await updateExpenseSettings(newSettings);
-          }}
-          onClose={() => setIsExpenseSettingsOpen(false)}
-        />
-      </main>
-
-      {/* Mobile Bottom Navigation */}
-      <BottomNav
-        activeTab={mobileTab}
-        onChange={setMobileTab}
-        insightCount={suggestions.length}
+      {/* Modal for Protein Settings */}
+      <ProteinSettingsModal
+        isOpen={isProteinSettingsOpen}
+        currentSettings={proteinSettings}
+        onSave={async (newSettings) => {
+          await updateProteinSettings(newSettings);
+        }}
+        onClose={() => setIsProteinSettingsOpen(false)}
       />
-    </div>
+
+      {/* Modal for Expense Budget Settings */}
+      <ExpenseSettingsModal
+        isOpen={isExpenseSettingsOpen}
+        currentSettings={expenseSettings}
+        onSave={async (newSettings) => {
+          await updateExpenseSettings(newSettings);
+        }}
+        onClose={() => setIsExpenseSettingsOpen(false)}
+      />
+    </>
   );
 }
