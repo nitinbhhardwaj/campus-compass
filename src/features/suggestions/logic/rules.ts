@@ -10,18 +10,21 @@ export function ruleDeadlinePressure(snapshot: DaySnapshot): Suggestion | null {
     return null;
   }
 
-  const timingDescription =
-    daysAway <= 0
-      ? 'due today or overdue'
-      : daysAway === 1
-      ? 'due tomorrow'
-      : 'due in 2 days';
+  let timingPhrase = '';
+  if (daysAway < 0) {
+    const overdueDays = Math.abs(daysAway);
+    timingPhrase = `${overdueDays} ${overdueDays === 1 ? 'day' : 'days'} overdue`;
+  } else if (daysAway === 0) {
+    timingPhrase = 'due today';
+  } else {
+    timingPhrase = `due in ${daysAway} ${daysAway === 1 ? 'day' : 'days'}`;
+  }
 
   return {
     id: 'rule-deadline-pressure',
     severity: 'warning',
     title: 'Study Deadline Approaching',
-    reason: `A priority-1 study task is ${timingDescription} (${daysAway} days away).`,
+    reason: `A priority-1 study task is ${timingPhrase}.`,
     action: 'Focus on your study blocks and consider deferring chores and skincare to later.',
   };
 }
@@ -108,11 +111,21 @@ export function ruleGymAtRisk(snapshot: DaySnapshot): Suggestion | null {
     return null;
   }
 
+  let deadlinePhrase = '';
+  if (daysAway < 0) {
+    const overdueDays = Math.abs(daysAway);
+    deadlinePhrase = `${overdueDays} ${overdueDays === 1 ? 'day' : 'days'} overdue`;
+  } else if (daysAway === 0) {
+    deadlinePhrase = 'due today';
+  } else {
+    deadlinePhrase = `due in ${daysAway} ${daysAway === 1 ? 'day' : 'days'}`;
+  }
+
   return {
     id: 'rule-gym-at-risk',
     severity: 'nudge',
     title: 'Gym Workout at Risk',
-    reason: `Gym workout is pending at ${snapshot.hour}:00 while a priority study deadline is ${daysAway} day(s) away.`,
+    reason: `Gym workout is pending at ${snapshot.hour}:00 while a priority study deadline is ${deadlinePhrase}.`,
     action: 'Opt for a lighter or shorter 20-30 min session rather than skipping your workout entirely.',
   };
 }

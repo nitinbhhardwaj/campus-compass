@@ -115,7 +115,7 @@ export function useAssistant(
 
         if (validIntents.length === 0) {
           setError(
-            validationErrors[0] || "I couldn't detect any actionable items or questions. Please try again."
+            validationErrors[0] || "I couldn’t detect any actionable items or questions. Please try again."
           );
           return;
         }

@@ -66,7 +66,7 @@ export const TaskList: React.FC<TaskListProps> = ({
   }
 
   return (
-    <ul className="rail" role="list" aria-label="Today's tasks">
+    <ul className="rail" role="list" aria-label="Today’s tasks">
       {tasks.map((task) => (
         <TaskItem
           key={task.id}

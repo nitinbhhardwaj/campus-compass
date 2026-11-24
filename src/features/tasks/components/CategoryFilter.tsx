@@ -28,7 +28,7 @@ export const CategoryFilter: React.FC<CategoryFilterProps> = ({
       role="tablist"
       aria-label="Filter tasks by category"
       className="chips"
-      style={{ marginTop: 0, marginBottom: '20px' }}
+      style={{ marginTop: 0, marginBottom: '20px', flexWrap: 'wrap' }}
     >
       {FILTER_ITEMS.map((item) => {
         const count = categoryCounts[item.value] || 0;

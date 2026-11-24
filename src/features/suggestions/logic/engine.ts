@@ -1,3 +1,5 @@
+export * from './rules';
+
 import { DaySnapshot, Suggestion, SuggestionSeverity } from '../types/suggestion';
 import {
   ruleDeadlinePressure,

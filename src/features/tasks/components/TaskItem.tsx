@@ -1,6 +1,7 @@
 import React from 'react';
 import { Task } from '../../../types/task';
 import { isTaskCompletedOnDate, isTaskOverdue, computeStreak } from '../logic/taskLogic';
+import { formatShortDate } from '../../../lib/dateUtils';
 
 interface TaskItemProps {
   task: Task;
@@ -43,33 +44,24 @@ export const TaskItem: React.FC<TaskItemProps> = ({
       <div className="t">
         <strong>{task.title}</strong>
         {overdue ? (
-          <span className="late">{task.dueDate} · overdue</span>
+          <span className="late">{formatShortDate(task.dueDate)} · overdue</span>
         ) : (
           <span>
             {categoryLabel}
             {isRecurring
               ? ` · ${task.recurrence === 'daily' ? 'Daily' : 'Weekly'}${streak > 0 ? ` · ${streak} day streak` : ''}`
-              : ` · due ${task.dueDate === today ? 'today' : task.dueDate}`}
+              : ` · due ${task.dueDate === today ? 'today' : formatShortDate(task.dueDate)}`}
           </span>
         )}
       </div>
 
       {/* Accessible edit & delete actions on the rail */}
-      <div style={{ display: 'flex', gap: '4px', alignItems: 'center', flexShrink: 0 }}>
+      <div className="task-actions">
         <button
           type="button"
           onClick={() => onEdit(task)}
           aria-label={`Edit ${task.title}`}
-          style={{
-            border: '1px solid var(--ink)',
-            background: 'var(--surface)',
-            color: 'var(--ink)',
-            font: '600 12px "Hanken Grotesk", sans-serif',
-            padding: '2px 8px',
-            borderRadius: '4px',
-            cursor: 'pointer',
-            minHeight: '28px',
-          }}
+          className="task-action-btn"
         >
           Edit
         </button>
@@ -77,16 +69,7 @@ export const TaskItem: React.FC<TaskItemProps> = ({
           type="button"
           onClick={() => onDelete(task.id)}
           aria-label={`Delete ${task.title}`}
-          style={{
-            border: '1px solid var(--danger)',
-            background: 'var(--surface)',
-            color: 'var(--danger)',
-            font: '600 12px "Hanken Grotesk", sans-serif',
-            padding: '2px 8px',
-            borderRadius: '4px',
-            cursor: 'pointer',
-            minHeight: '28px',
-          }}
+          className="task-action-btn delete"
         >
           ×
         </button>

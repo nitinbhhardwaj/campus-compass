@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Mic, MicOff, Send, Settings, Trash2, Edit3, CheckCircle2, AlertCircle, HelpCircle } from 'lucide-react';
 import { AssistantIntent, AssistantSettings } from '../types/assistant';
+import { formatShortDate } from '../../../lib/dateUtils';
 import { AssistantSettingsView } from './AssistantSettingsView';
 import { AssistantItemEditor } from './AssistantItemEditor';
 
@@ -90,14 +91,14 @@ export const AssistantModal: React.FC<AssistantModalProps> = ({
         return {
           badge: 'Task',
           title: intent.title,
-          details: `${intent.category.toUpperCase()} • P${intent.priority} • Due: ${intent.dueDate || 'Today'}${intent.recurrence !== 'none' ? ` (${intent.recurrence})` : ''}`,
+          details: `${intent.category.toUpperCase()} • P${intent.priority} • Due: ${intent.dueDate ? formatShortDate(intent.dueDate) : 'Today'}${intent.recurrence !== 'none' ? ` (${intent.recurrence})` : ''}`,
           color: 'var(--ink)',
         };
       case 'add_expense':
         return {
           badge: 'Expense',
           title: `₹${intent.amountRupees} for ${intent.note}`,
-          details: `${intent.category.toUpperCase()} • Date: ${intent.date}`,
+          details: `${intent.category.toUpperCase()} • Date: ${formatShortDate(intent.date)}`,
           color: '#B04B14',
         };
       case 'add_protein':

@@ -1,5 +1,5 @@
 import React from 'react';
-import { Mic, Sparkles } from 'lucide-react';
+import { Mic } from 'lucide-react';
 
 interface AssistantTriggerProps {
   onClick: () => void;
@@ -54,7 +54,7 @@ export const AssistantTrigger: React.FC<AssistantTriggerProps> = ({
         style={{
           width: '28px',
           height: '28px',
-          borderRadius: '50%',
+          borderRadius: '4px',
           background: 'var(--hl)',
           color: 'var(--hl-text)',
           display: 'flex',
@@ -65,7 +65,6 @@ export const AssistantTrigger: React.FC<AssistantTriggerProps> = ({
         <Mic size={16} strokeWidth={2.5} />
       </div>
       <span>Ask {assistantName}</span>
-      <Sparkles size={14} style={{ opacity: 0.8 }} />
     </button>
   );
 };

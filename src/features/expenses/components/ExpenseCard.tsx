@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Expense, ExpenseCategory, CreateExpenseDTO } from '../types/expense';
 import { BudgetStatus, CategoryWarning, formatPaiseToRupees } from '../logic/expenseLogic';
+import { formatShortDate } from '../../../lib/dateUtils';
 import { ExpenseForm } from './ExpenseForm';
 
 interface ExpenseCardProps {
@@ -191,7 +192,7 @@ export const ExpenseCard: React.FC<ExpenseCardProps> = ({
               <div>
                 <strong>{expense.note}</strong>
                 <span style={{ display: 'block', fontSize: '12px', color: 'var(--muted)', textTransform: 'capitalize' }}>
-                  {expense.category} · {expense.date}
+                  {expense.category} · {formatShortDate(expense.date)}
                 </span>
               </div>
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>

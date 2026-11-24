@@ -45,7 +45,7 @@ describe('suggestions rules and engine', () => {
       const result = ruleDeadlinePressure(snap);
       expect(result).not.toBeNull();
       expect(result?.severity).toBe('warning');
-      expect(result?.reason).toContain('1 days away');
+      expect(result?.reason).toContain('due in 1 day');
     });
 
     it('triggers at the exact boundary of 2 days', () => {
@@ -53,7 +53,39 @@ describe('suggestions rules and engine', () => {
         ...defaultSnapshot,
         tasks: { ...defaultSnapshot.tasks, nearestP1StudyDueDaysAway: 2 },
       };
-      expect(ruleDeadlinePressure(snap)).not.toBeNull();
+      const result = ruleDeadlinePressure(snap);
+      expect(result).not.toBeNull();
+      expect(result?.reason).toContain('due in 2 days');
+    });
+
+    it('formats reason naturally when task is due today', () => {
+      const snap: DaySnapshot = {
+        ...defaultSnapshot,
+        tasks: { ...defaultSnapshot.tasks, nearestP1StudyDueDaysAway: 0 },
+      };
+      const result = ruleDeadlinePressure(snap);
+      expect(result).not.toBeNull();
+      expect(result?.reason).toContain('due today');
+    });
+
+    it('formats reason naturally when task is overdue', () => {
+      const snap: DaySnapshot = {
+        ...defaultSnapshot,
+        tasks: { ...defaultSnapshot.tasks, nearestP1StudyDueDaysAway: -4 },
+      };
+      const result = ruleDeadlinePressure(snap);
+      expect(result).not.toBeNull();
+      expect(result?.reason).toContain('4 days overdue');
+    });
+
+    it('formats singular overdue day naturally', () => {
+      const snap: DaySnapshot = {
+        ...defaultSnapshot,
+        tasks: { ...defaultSnapshot.tasks, nearestP1StudyDueDaysAway: -1 },
+      };
+      const result = ruleDeadlinePressure(snap);
+      expect(result).not.toBeNull();
+      expect(result?.reason).toContain('1 day overdue');
     });
 
     it('does not trigger when study task is 3 days away', () => {

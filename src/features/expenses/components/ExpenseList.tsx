@@ -1,6 +1,7 @@
 import React from 'react';
 import { Expense, ExpenseCategory } from '../types/expense';
 import { formatPaiseToRupees } from '../logic/expenseLogic';
+import { formatShortDate } from '../../../lib/dateUtils';
 import { Badge, BadgeProps } from '../../../components/Badge';
 import { IconButton } from '../../../components/IconButton';
 import { EmptyState } from '../../../components/EmptyState';
@@ -60,7 +61,7 @@ export const ExpenseList: React.FC<ExpenseListProps> = ({
                 <Badge variant={cat.variant} className="text-[10px] px-1.5 py-0">
                   {cat.label}
                 </Badge>
-                <span className="tabular-nums">{expense.date}</span>
+                <span className="tabular-nums">{formatShortDate(expense.date)}</span>
               </div>
             </div>
 

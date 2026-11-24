@@ -198,10 +198,10 @@ export default function App() {
 
   const headline = useMemo(() => {
     const count = suggestions.length;
-    if (count === 0) return "You're completely on track today.";
-    if (count === 1) return "One thing can't wait today.";
-    if (count === 2) return "Two things can't wait today.";
-    return `${count} things can't wait today.`;
+    if (count === 0) return "You’re completely on track today.";
+    if (count === 1) return "One thing can’t wait today.";
+    if (count === 2) return "Two things can’t wait today.";
+    return `${count} things can’t wait today.`;
   }, [suggestions.length]);
 
   return (

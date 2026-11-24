@@ -107,3 +107,23 @@ export function formatDisplayDate(dateStr: string): string {
     day: 'numeric',
   });
 }
+
+const SHORT_DAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'] as const;
+const SHORT_MONTHS = [
+  'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+  'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
+] as const;
+
+/**
+ * Formats a 'YYYY-MM-DD' string into 'EEE d MMM' (e.g. 'Fri 20 Nov'), without year or comma.
+ */
+export function formatShortDate(dateStr: string): string {
+  if (!dateStr || typeof dateStr !== 'string') return '';
+  const parts = dateStr.split('-').map(Number);
+  if (parts.length !== 3 || parts.some(isNaN)) return dateStr;
+  const [year, month, day] = parts;
+  const date = new Date(year, month - 1, day);
+  const dayName = SHORT_DAYS[date.getDay()];
+  const monthName = SHORT_MONTHS[date.getMonth()];
+  return `${dayName} ${date.getDate()} ${monthName}`;
+}

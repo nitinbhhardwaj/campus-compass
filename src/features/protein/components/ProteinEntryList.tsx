@@ -27,7 +27,7 @@ export const ProteinEntryList: React.FC<ProteinEntryListProps> = ({
     <div
       className="mt-2 flex flex-col gap-1.5 max-h-48 overflow-y-auto pr-0.5"
       role="list"
-      aria-label="Today's protein entries"
+      aria-label="Today’s protein entries"
     >
       {entries.map((entry) => (
         <div
