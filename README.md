@@ -32,11 +32,11 @@ College students juggle academic deadlines, fitness routines, daily nutrition, a
 - **Prioritized Today Agenda and Habit Streaks:**
   Unified scheduling for study blocks, workouts, skincare, and chores. Non-recurring tasks support overdue resurfacing so past incomplete work is never lost; recurring tasks (daily/weekly) calculate dynamic habit streaks from date logs (`completedDates`) without resetting mid-day.
 - **Daily Protein Tracker:**
-  Calculates target protein intake from body weight (`weightKg * 1.6`) with custom override support. Features 8 quick-add student presets (eggs, paneer, dal, whey, chicken, milk, soya chunks, curd) marked with approximate gram values, custom entry logging, and visual progress tracking.
+  Calculates target protein intake from body weight (`weightKg * 1.6`) with custom override support. Features a 3-option diet preference control (Veg / Eggetarian / Non-veg) with 4px radius, live preset filtering (`presetsForDiet`), 8 tagged student presets (egg, paneer, dal, whey, chicken, milk, 100g Soya chunks (dry), curd), unfiltered custom entry logging, and visual progress tracking.
 - **Monthly Student Expense Tracker:**
   Tracks spending across essentials (Food, Travel, Rent, Subscriptions, Study, Other) against overall and per-category monthly budgets. Includes month-by-month historical navigation, float-safe rupee input parsing, and automated threshold alerts at $\ge 80\%$ budget usage.
 - **Rule-Based Contextual Suggestion Engine:**
-  Evaluates real-time student trade-offs across all three modules to surface at most 3 actionable, explainable planning nudges sorted by severity (`warning` > `nudge` > `info`).
+  Evaluates real-time student trade-offs across all three modules to surface at most 3 actionable, explainable planning nudges sorted by severity (`warning` > `nudge` > `info`). Dietary preferences are respected: vegetarian users are never told to eat eggs or chicken.
 - **Conversational Planning Assistant ("Nova"):**
   Hands-free, multi-intent voice or text capture (e.g. *"hey Nova, submit DBMS assignment tomorrow, spent 120 on lunch, had 2 eggs"*). Uses browser `SpeechRecognition` (`en-IN` default), serverless edge parsing, prompt-injection defense, and a mandatory confirmation queue with inline item editing before saving. Optional speech synthesis (`SpeechSynthesis`) reads out confirmations and questions.
 
@@ -55,7 +55,7 @@ Campus Compass uses a **deterministic, rule-based heuristics engine** rather tha
 2. **Evening Protein Catch-Up under Budget Constraint (`nudge`):**
    - *Trigger:* Time is past 6 PM (`hour >= 18`), total protein is $< 60\%$ of goal, and food budget is $\ge 80\%$ used.
    - *Reason Output:* `"Protein is 45g of 112g (40%) and it is 19:00 (after 6 PM)."`
-   - *Action Nudge:* `"Close the 67g gap with budget-friendly staples like boiled eggs, curd, dal, or soya chunks."`
+   - *Action Nudge (Diet-Aware):* Adapts to the user's diet preference. For vegetarian users: `"Close the 67g gap with budget-friendly staples like curd, dal, or soya chunks."` (never eggs or chicken). For eggetarian users: includes boiled eggs. For non-vegetarian users: includes standard student staples.
 
 ---
 
@@ -183,6 +183,7 @@ All screens and feature modules are built using atomic, decoupled UI components:
 
 | Decision | Why It Matters / Interview Defense |
 | :--- | :--- |
+| **Diet Preference Segmentation & Unfiltered Logging** | Dietary preference (`veg`, `egg`, `non-veg`) filters quick-add presets and tailors suggestion engine recommendations so vegetarian users never see prompts for eggs or meat. However, manual and conversational logging remains completely unconstrained: if a vegetarian user logs eggs, the system faithfully records the entry without blocking or judging. The assistant receives the diet preference in context to avoid recommending non-veg alternatives. |
 | **The Trust Boundary (Model Output as Untrusted Input)** | Natural language model outputs are non-deterministic and susceptible to prompt injection, hallucinated schema parameters, and malformed structures. In Campus Compass, LLM responses are treated as untrusted external payloads. The `validateIntents` gate enforces strict schema conformance, strips malicious script tags and injection payloads, drops unrecognized intent types (such as unauthorized deletion or modification attempts), bounds multi-intent bursts to 5, and validates calendar dates against real Gregorian calendar boundaries (e.g. rejecting `2026-02-30`). |
 | **Mandatory Human-in-the-Loop Confirmation** | Autonomous agents that directly commit mutations to databases create phantom records, double-counting, and user distress. In Campus Compass, the assistant only parses utterances into a staged confirmation queue. Users retain full autonomy to inspect, edit fields inline (adjusting titles, categories, priorities, due dates, paise amounts, or protein grams), and discard false positives before a single database write is executed via "Confirm all". |
 | **Server-Side Secret Isolation & Edge Rate Limiting** | Storing LLM API keys in client applications exposes credentials to reverse-engineering, quota hijacking, and financial liability. The conversational assistant connects through a serverless function (`/api/parse`) running at the edge. The serverless handler enforces strict payload constraints (<10KB body, <1,000 character transcripts) and sliding-window IP rate limiting (max 30 req/min), gracefully falling back to deterministic local heuristic extraction if remote APIs are unavailable. |
@@ -207,7 +208,7 @@ All screens and feature modules are built using atomic, decoupled UI components:
 
 ## Testing and Verification
 
-The codebase includes **129 unit tests** powered by **Vitest**, covering domain logic, boundary conditions, input parsers, intent safety gates, and repository adapters:
+The codebase includes **145 unit tests** powered by **Vitest**, covering domain logic, boundary conditions, input parsers, intent safety gates, and repository adapters:
 
 ```bash
 # Run the complete unit test suite
@@ -219,12 +220,13 @@ npm run test:watch
 
 ### Test Coverage Highlights:
 - **Tasks Logic (28 tests):** Daily recurrence across days (resets cleanly), weekly recurrence weekday matching, overdue task retention, priority sorting hierarchy with completed tasks anchored last, category filtering, weekly summary aggregation, habit streak computation (active, pending, broken, restart).
-- **Protein Logic (17 tests):** Body weight multiplier ($1.6\times$), daily summation, remaining protein calculation (floored at 0), display percentage capping at 100%, chronological sorting, settings input validation.
+- **Protein Logic (21 tests):** Body weight multiplier ($1.6\times$), daily summation, remaining protein calculation (floored at 0), display percentage capping at 100%, chronological sorting, settings input validation, diet preference preset filtering (`presetsForDiet`).
 - **Expenses Logic (15 tests):** Float-safe string-to-paise parser (`"12.5"` $\to$ 1250, `"100"` $\to$ 10000, `"0.75"` $\to$ 75), INR formatting, monthly totals, category totals, remaining budget, uncapped budget percentages, budget status transitions (ok, warning $\ge 80\%$, over $> 100\%$), category warning detection.
-- **Suggestion Engine and Rules (24 tests):** Every rule tested for trigger, non-trigger, and exact numerical boundaries (hour 17 vs 18, 59% vs 60%, 79% vs 80%, 2 vs 3 overdue tasks, 4 vs 5 study completions), severity ranking order (`warning` $>$ `nudge` $>$ `info`), max-3 capping, and empty state output.
-- **Assistant Intent Validation and Injection Defense (21 tests):** Wake word stripping (`hey Nova`), discriminated union intent parsing (`add_task`, `add_expense`, `add_protein`, `clarify`), prompt-injection sanitization, malformed and adversarial JSON protection, dropping unauthorized intent types, real Gregorian calendar date validation (leap year handling, rejecting invalid days), and the 5-intent per utterance burst cap.
-- **LLM Providers (5 tests):** `FetchLLMProvider` HTTP dispatch and error propagation, `MockLLMProvider` canned and custom parser behavior.
-- **Storage Repositories (16 tests):** Seed data loading, async CRUD operations for Task, Protein, Expense, and Assistant Settings LocalStorage adapters with graceful corruption recovery.
+- **Suggestion Engine and Rules (29 tests):** Diet-specific food recommendations for veg, egg, and non-veg, numerical boundaries (hour 17 vs 18, 59% vs 60%, 79% vs 80%, 2 vs 3 overdue tasks, 4 vs 5 study completions), severity ranking order (`warning` $>$ `nudge` $>$ `info`), max-3 capping, and empty state output.
+- **Assistant Intent Validation and Injection Defense (22 tests):** Wake word stripping (`hey Nova`), discriminated union intent parsing (`add_task`, `add_expense`, `add_protein`, `clarify`), prompt-injection sanitization, malformed JSON protection, dropping unauthorized intent types, real Gregorian calendar date validation, preserving explicit user entries regardless of diet, and the 5-intent burst cap.
+- **LLM Providers (5 tests):** `FetchLLMProvider` HTTP dispatch and error propagation with context forwarding, `MockLLMProvider` canned and custom parser behavior.
+- **Storage Repositories (17 tests):** Seed data loading, async CRUD operations for Task, Protein, Expense, and Assistant Settings LocalStorage adapters, plus backward-compatible migration defaulting old storage without dietPreference to veg.
+- **Date Utilities (5 tests):** Deterministic short date formatting (`formatShortDate`), local date formatting, and week range calculation.
 - **Anti-Corruption and Execution Adapters (3 tests):** `buildDaySnapshot` end-to-end integration and `executeIntents` mapping from assistant intents to domain DTOs without side effects.
 
 ---
