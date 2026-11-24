@@ -10,6 +10,8 @@ export interface Suggestion {
 
 export type SnapshotTaskCategory = 'study' | 'gym' | 'skincare' | 'chore' | 'other';
 
+export type SnapshotDietPreference = 'veg' | 'egg' | 'non-veg';
+
 /**
  * Plain input contract representing all facts needed by the rule engine.
  * Contains only primitive types. Independent of tasks, protein, or expense modules.
@@ -32,6 +34,7 @@ export interface DaySnapshot {
   protein: {
     totalGrams: number;
     goalGrams: number;
+    dietPreference?: SnapshotDietPreference;
   };
   expenses: {
     foodBudgetUsedPercent: number | null; // null if no budget configured

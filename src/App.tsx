@@ -158,6 +158,7 @@ export default function App() {
       protein: {
         totalGrams: proteinTotal,
         goalGrams: proteinSettings.goalGrams,
+        dietPreference: proteinSettings.dietPreference,
       },
       expenses: {
         totalSpentPaise,
@@ -173,6 +174,7 @@ export default function App() {
     currentHour,
     proteinTotal,
     proteinSettings.goalGrams,
+    proteinSettings.dietPreference,
     totalSpentPaise,
     expenseSettings.monthlyBudgetPaise,
     expenseCategoryTotals,

@@ -39,7 +39,7 @@ export function ruleProteinLowInEvening(snapshot: DaySnapshot): Suggestion | nul
     return null;
   }
 
-  const { totalGrams, goalGrams } = snapshot.protein;
+  const { totalGrams, goalGrams, dietPreference = 'veg' } = snapshot.protein;
   if (goalGrams <= 0) {
     return null;
   }
@@ -60,9 +60,25 @@ export function ruleProteinLowInEvening(snapshot: DaySnapshot): Suggestion | nul
 
   const isBudgetConstrained = isFoodBudgetTight || isOverallBudgetTight;
 
-  const actionText = isBudgetConstrained
-    ? `Close the ${remaining}g gap with budget-friendly staples like boiled eggs, curd, dal, or soya chunks.`
-    : `Close the ${remaining}g gap with a high-protein dinner or quick snack (paneer, chicken, whey, or eggs).`;
+  let foodOptions = '';
+  if (isBudgetConstrained) {
+    if (dietPreference === 'veg') {
+      foodOptions = 'budget-friendly staples like curd, dal, or soya chunks';
+    } else {
+      // 'egg' and 'non-veg' users can have boiled eggs in budget options
+      foodOptions = 'budget-friendly staples like boiled eggs, curd, dal, or soya chunks';
+    }
+  } else {
+    if (dietPreference === 'veg') {
+      foodOptions = 'a high-protein dinner or quick snack (paneer, whey, or soya chunks)';
+    } else if (dietPreference === 'egg') {
+      foodOptions = 'a high-protein dinner or quick snack (eggs, paneer, whey, or soya chunks)';
+    } else {
+      foodOptions = 'a high-protein dinner or quick snack (paneer, chicken, whey, or eggs)';
+    }
+  }
+
+  const actionText = `Close the ${remaining}g gap with ${foodOptions}.`;
 
   return {
     id: 'rule-protein-low-evening',

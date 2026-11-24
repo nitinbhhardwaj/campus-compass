@@ -29,6 +29,7 @@ describe('suggestions rules and engine', () => {
     protein: {
       totalGrams: 80,
       goalGrams: 112,
+      dietPreference: 'veg',
     },
     expenses: {
       foodBudgetUsedPercent: 45,
@@ -133,27 +134,73 @@ describe('suggestions rules and engine', () => {
       expect(ruleProteinLowInEvening(snap)).toBeNull();
     });
 
-    it('suggests budget-friendly options when food budget is >= 80%', () => {
+    it('suggests budget-friendly options tailored for veg users when food budget is >= 80%', () => {
       const snap: DaySnapshot = {
         ...defaultSnapshot,
         hour: 20,
-        protein: { totalGrams: 30, goalGrams: 100 },
+        protein: { totalGrams: 30, goalGrams: 100, dietPreference: 'veg' },
         expenses: { foodBudgetUsedPercent: 82, overallBudgetUsedPercent: 70 },
       };
       const result = ruleProteinLowInEvening(snap);
       expect(result?.action).toContain('budget-friendly');
-      expect(result?.action).toContain('eggs, curd, dal, or soya chunks');
+      expect(result?.action).toContain('curd, dal, or soya chunks');
+      expect(result?.action).not.toContain('boiled eggs');
+      expect(result?.action).not.toContain('chicken');
     });
 
-    it('suggests standard options when food budget is healthy (< 80%)', () => {
+    it('suggests standard options tailored for veg users when food budget is healthy (< 80%)', () => {
       const snap: DaySnapshot = {
         ...defaultSnapshot,
         hour: 20,
-        protein: { totalGrams: 30, goalGrams: 100 },
+        protein: { totalGrams: 30, goalGrams: 100, dietPreference: 'veg' },
         expenses: { foodBudgetUsedPercent: 40, overallBudgetUsedPercent: 50 },
       };
       const result = ruleProteinLowInEvening(snap);
-      expect(result?.action).toContain('paneer, chicken, whey');
+      expect(result?.action).toContain('paneer, whey, or soya chunks');
+      expect(result?.action).not.toContain('chicken');
+      expect(result?.action).not.toContain('eggs');
+    });
+
+    it('suggests eggs but never chicken for egg (eggetarian) users', () => {
+      const budgetSnap: DaySnapshot = {
+        ...defaultSnapshot,
+        hour: 20,
+        protein: { totalGrams: 30, goalGrams: 100, dietPreference: 'egg' },
+        expenses: { foodBudgetUsedPercent: 85, overallBudgetUsedPercent: 70 },
+      };
+      const budgetResult = ruleProteinLowInEvening(budgetSnap);
+      expect(budgetResult?.action).toContain('boiled eggs, curd, dal, or soya chunks');
+      expect(budgetResult?.action).not.toContain('chicken');
+
+      const regularSnap: DaySnapshot = {
+        ...defaultSnapshot,
+        hour: 20,
+        protein: { totalGrams: 30, goalGrams: 100, dietPreference: 'egg' },
+        expenses: { foodBudgetUsedPercent: 50, overallBudgetUsedPercent: 50 },
+      };
+      const regularResult = ruleProteinLowInEvening(regularSnap);
+      expect(regularResult?.action).toContain('eggs, paneer, whey, or soya chunks');
+      expect(regularResult?.action).not.toContain('chicken');
+    });
+
+    it('suggests chicken and eggs for non-veg users', () => {
+      const budgetSnap: DaySnapshot = {
+        ...defaultSnapshot,
+        hour: 20,
+        protein: { totalGrams: 30, goalGrams: 100, dietPreference: 'non-veg' },
+        expenses: { foodBudgetUsedPercent: 85, overallBudgetUsedPercent: 70 },
+      };
+      const budgetResult = ruleProteinLowInEvening(budgetSnap);
+      expect(budgetResult?.action).toContain('boiled eggs, curd, dal, or soya chunks');
+
+      const regularSnap: DaySnapshot = {
+        ...defaultSnapshot,
+        hour: 20,
+        protein: { totalGrams: 30, goalGrams: 100, dietPreference: 'non-veg' },
+        expenses: { foodBudgetUsedPercent: 50, overallBudgetUsedPercent: 50 },
+      };
+      const regularResult = ruleProteinLowInEvening(regularSnap);
+      expect(regularResult?.action).toContain('paneer, chicken, whey, or eggs');
     });
   });
 

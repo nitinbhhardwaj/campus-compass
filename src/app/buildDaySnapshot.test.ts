@@ -57,6 +57,7 @@ describe('buildDaySnapshot adapter', () => {
       protein: {
         totalGrams: 45,
         goalGrams: 112,
+        dietPreference: 'egg',
       },
       expenses: {
         totalSpentPaise: 1200000,
@@ -85,6 +86,7 @@ describe('buildDaySnapshot adapter', () => {
     expect(snapshot.tasks.nearestP1StudyDueDaysAway).toBe(1);
     expect(snapshot.gym.isGymPendingToday).toBe(true);
     expect(snapshot.protein.totalGrams).toBe(45);
+    expect(snapshot.protein.dietPreference).toBe('egg');
     expect(snapshot.expenses.foodBudgetUsedPercent).toBe(87);
     expect(snapshot.expenses.overallBudgetUsedPercent).toBe(80);
   });

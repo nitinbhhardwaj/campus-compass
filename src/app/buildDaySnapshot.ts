@@ -16,6 +16,7 @@ export interface BuildDaySnapshotParams {
   protein: {
     totalGrams: number;
     goalGrams: number;
+    dietPreference?: 'veg' | 'egg' | 'non-veg';
   };
   expenses: {
     totalSpentPaise: number;
@@ -126,6 +127,7 @@ export function buildDaySnapshot(params: BuildDaySnapshotParams): DaySnapshot {
     protein: {
       totalGrams: protein.totalGrams,
       goalGrams: protein.goalGrams,
+      dietPreference: protein.dietPreference ?? 'veg',
     },
     expenses: {
       foodBudgetUsedPercent,
