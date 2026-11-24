@@ -67,24 +67,29 @@
   box-sizing: border-box;
 }
 
+html,
+body,
+#root {
+  width: 100%;
+  min-height: 100dvh;
+  margin: 0;
+}
+
 html {
   scroll-padding-top: env(safe-area-inset-top, 0px);
 }
 
 body {
-  margin: 0;
   color: var(--text);
   font: 400 16px/1.5 "Hanken Grotesk", system-ui, sans-serif;
   background-color: var(--paper);
   background-image: linear-gradient(var(--grid) 1px, transparent 1px),
     linear-gradient(90deg, var(--grid) 1px, transparent 1px);
   background-size: 28px 28px;
-  min-height: 100vh;
 }
 
 .wrap {
-  max-width: 1040px;
-  margin: 0 auto;
+  width: 100%;
   padding: 28px 20px 64px;
 }
 
