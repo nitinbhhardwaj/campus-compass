@@ -8,6 +8,7 @@ describe('LLM Providers', () => {
     today: '2026-11-24',
     allowedTaskCategories: ['study', 'gym', 'skincare', 'chore', 'other'],
     allowedExpenseCategories: ['food', 'travel', 'rent', 'subscriptions', 'study', 'other'],
+    dietPreference: 'veg',
   };
 
   describe('FetchLLMProvider', () => {

@@ -20,6 +20,7 @@ const defaultRepo = new LocalAssistantRepository();
 
 export function useAssistant(
   today: string,
+  dietPreference: string = 'veg',
   provider: LLMProvider = defaultProvider,
   repo: AssistantRepository = defaultRepo
 ) {
@@ -107,6 +108,7 @@ export function useAssistant(
         today,
         allowedTaskCategories: ['study', 'gym', 'skincare', 'chore', 'other'],
         allowedExpenseCategories: ['food', 'travel', 'rent', 'subscriptions', 'study', 'other'],
+        dietPreference,
       };
 
       try {
@@ -148,7 +150,7 @@ export function useAssistant(
         setIsParsing(false);
       }
     },
-    [inputText, settings, today, provider, speechRecognition, speak]
+    [inputText, settings, today, dietPreference, provider, speechRecognition, speak]
   );
 
   const updateIntent = useCallback((index: number, updated: AssistantIntent) => {

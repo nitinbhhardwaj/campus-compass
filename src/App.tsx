@@ -102,7 +102,7 @@ export default function App() {
     startListening: startAssistantListening,
     stopListening: stopAssistantListening,
     isSpeechRecognitionSupported,
-  } = useAssistant(today);
+  } = useAssistant(today, proteinSettings.dietPreference);
 
   const handleConfirmAssistantIntents = async () => {
     await confirmAssistantIntents(async (intents) => {

@@ -152,6 +152,18 @@ describe('validateIntents', () => {
       });
     });
 
+    it('preserves user explicit egg or non-veg food entry regardless of diet', () => {
+      const raw = {
+        type: 'add_protein',
+        label: 'Had two eggs',
+        grams: 12,
+      };
+      const res = validateIntents(raw, TODAY);
+      expect(res.validIntents).toHaveLength(1);
+      expect(res.validIntents[0].type).toBe('add_protein');
+      expect((res.validIntents[0] as any).label).toBe('Had two eggs');
+    });
+
     it('validates a clarify intent', () => {
       const raw = {
         type: 'clarify',

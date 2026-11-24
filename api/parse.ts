@@ -143,7 +143,8 @@ INSTRUCTIONS:
 3. If an utterance is missing crucial details, ambiguous, or unclear, output a "clarify" intent instead of guessing.
 4. For multi-item utterances (e.g. "I spent 120 on lunch and had 2 eggs and need to do DBMS tomorrow"), output multiple intents in the array (max 5).
 5. DO NOT provide medical, dietary, or financial advice.
-6. Output raw JSON only. Do not wrap in markdown or backticks.`;
+6. Respect user dietary preferences in clarifications or suggestions (if diet is "veg", never suggest egg or non-veg foods; if "egg", never suggest meat). However, if the user explicitly says they consumed an item (for example, "had two eggs" while set to veg), always extract and log that consumed item accurately.
+7. Output raw JSON only. Do not wrap in markdown or backticks.`;
 
   const apiKey = process.env.GEMINI_API_KEY || process.env.OPENAI_API_KEY || process.env.LLM_API_KEY;
 
