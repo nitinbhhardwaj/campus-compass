@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import { ProteinEntry, CreateProteinEntryDTO } from '../types/protein';
+import { ProteinEntry, CreateProteinEntryDTO, DietPreference } from '../types/protein';
 import { PROTEIN_PRESETS } from '../constants/presets';
+import { presetsForDiet } from '../logic/proteinLogic';
 
 interface ProteinCardProps {
   today: string;
@@ -9,6 +10,8 @@ interface ProteinCardProps {
   remainingGrams: number;
   progress: number;
   todayEntries: ProteinEntry[];
+  dietPreference?: DietPreference;
+  onUpdateDietPreference?: (diet: DietPreference) => Promise<void>;
   onAddEntry: (dto: CreateProteinEntryDTO) => Promise<void>;
   onDeleteEntry: (id: string) => Promise<void>;
   onOpenSettings: () => void;
@@ -21,6 +24,8 @@ export const ProteinCard: React.FC<ProteinCardProps> = ({
   remainingGrams,
   progress,
   todayEntries,
+  dietPreference = 'veg',
+  onUpdateDietPreference,
   onAddEntry,
   onDeleteEntry,
   onOpenSettings,
@@ -31,6 +36,7 @@ export const ProteinCard: React.FC<ProteinCardProps> = ({
   const [customGrams, setCustomGrams] = useState('');
 
   const fillPercent = Math.min(100, Math.max(0, progress));
+  const visiblePresets = presetsForDiet(PROTEIN_PRESETS, dietPreference);
 
   const handleCustomSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -76,9 +82,57 @@ export const ProteinCard: React.FC<ProteinCardProps> = ({
         </div>
       </div>
 
+      {/* Diet Preference Segmented Control */}
+      <div
+        role="group"
+        aria-label="Diet preference filter"
+        style={{
+          display: 'inline-flex',
+          gap: '2px',
+          padding: '2px',
+          border: '1.5px solid var(--ink)',
+          borderRadius: '4px',
+          background: 'var(--paper)',
+          marginTop: '12px',
+        }}
+      >
+        {(
+          [
+            { value: 'veg', label: 'Veg' },
+            { value: 'egg', label: 'Eggetarian' },
+            { value: 'non-veg', label: 'Non-veg' },
+          ] as const
+        ).map((opt) => {
+          const isActive = dietPreference === opt.value;
+          return (
+            <button
+              key={opt.value}
+              type="button"
+              onClick={() => onUpdateDietPreference?.(opt.value)}
+              aria-pressed={isActive}
+              style={{
+                border: 'none',
+                borderRadius: '4px',
+                padding: '4px 10px',
+                fontSize: '12px',
+                fontWeight: 700,
+                fontFamily: '"Hanken Grotesk", sans-serif',
+                cursor: 'pointer',
+                background: isActive ? 'var(--ink)' : 'transparent',
+                color: isActive ? 'var(--paper)' : 'var(--ink)',
+                minHeight: '32px',
+                transition: 'background-color 0.15s ease, color 0.15s ease',
+              }}
+            >
+              {opt.label}
+            </button>
+          );
+        })}
+      </div>
+
       {/* Preset Chips */}
-      <div className="chips">
-        {PROTEIN_PRESETS.map((p) => (
+      <div className="chips" style={{ marginTop: '10px' }}>
+        {visiblePresets.map((p) => (
           <button
             key={p.id}
             type="button"

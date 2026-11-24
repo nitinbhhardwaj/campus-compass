@@ -291,6 +291,13 @@ export default function App() {
                     remainingGrams={proteinRemaining}
                     progress={proteinProgress}
                     todayEntries={todayProteinEntries}
+                    dietPreference={proteinSettings.dietPreference}
+                    onUpdateDietPreference={async (diet) => {
+                      await updateProteinSettings({
+                        ...proteinSettings,
+                        dietPreference: diet,
+                      });
+                    }}
                     onAddEntry={async (dto) => {
                       await addProteinEntry(dto);
                     }}

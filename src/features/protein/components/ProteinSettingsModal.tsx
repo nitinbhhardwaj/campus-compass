@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ProteinSettings } from '../types/protein';
+import { ProteinSettings, DietPreference } from '../types/protein';
 import { validateProteinSettings, defaultGoalFromWeight } from '../logic/proteinLogic';
 import { Modal } from '../../../components/Modal';
 
@@ -18,6 +18,7 @@ export const ProteinSettingsModal: React.FC<ProteinSettingsModalProps> = ({
 }) => {
   const [weightInput, setWeightInput] = useState(String(currentSettings.bodyWeightKg));
   const [goalInput, setGoalInput] = useState(String(currentSettings.goalGrams));
+  const [dietInput, setDietInput] = useState<DietPreference>(currentSettings.dietPreference || 'veg');
   const [isManualOverride, setIsManualOverride] = useState(
     currentSettings.goalGrams !== defaultGoalFromWeight(currentSettings.bodyWeightKg)
   );
@@ -50,6 +51,7 @@ export const ProteinSettingsModal: React.FC<ProteinSettingsModalProps> = ({
     const validation = validateProteinSettings({
       bodyWeightKg: parsedWeight,
       goalGrams: parsedGoal,
+      dietPreference: dietInput,
     });
 
     if (!validation.isValid) {
@@ -63,7 +65,7 @@ export const ProteinSettingsModal: React.FC<ProteinSettingsModalProps> = ({
       await onSave({
         bodyWeightKg: parsedWeight,
         goalGrams: Math.round(parsedGoal),
-        dietPreference: currentSettings.dietPreference || 'veg',
+        dietPreference: dietInput,
       });
       onClose();
     } catch (err) {
@@ -82,6 +84,63 @@ export const ProteinSettingsModal: React.FC<ProteinSettingsModalProps> = ({
             {errors.form}
           </div>
         )}
+
+        {/* Diet Preference Input */}
+        <div>
+          <label style={{ display: 'block', fontSize: '13px', fontWeight: 600, color: 'var(--muted)', marginBottom: '6px' }}>
+            Diet Preference
+          </label>
+          <div
+            role="group"
+            aria-label="Diet preference"
+            style={{
+              display: 'inline-flex',
+              gap: '2px',
+              padding: '2px',
+              border: '2px solid var(--ink)',
+              borderRadius: '4px',
+              background: 'var(--paper)',
+              width: '100%',
+            }}
+          >
+            {(
+              [
+                { value: 'veg', label: 'Veg' },
+                { value: 'egg', label: 'Eggetarian' },
+                { value: 'non-veg', label: 'Non-veg' },
+              ] as const
+            ).map((opt) => {
+              const isActive = dietInput === opt.value;
+              return (
+                <button
+                  key={opt.value}
+                  type="button"
+                  onClick={() => setDietInput(opt.value)}
+                  aria-pressed={isActive}
+                  style={{
+                    flex: 1,
+                    border: 'none',
+                    borderRadius: '4px',
+                    padding: '8px 12px',
+                    fontSize: '13px',
+                    fontWeight: 700,
+                    fontFamily: '"Hanken Grotesk", sans-serif',
+                    cursor: 'pointer',
+                    background: isActive ? 'var(--ink)' : 'transparent',
+                    color: isActive ? 'var(--paper)' : 'var(--ink)',
+                    minHeight: '44px',
+                    transition: 'background-color 0.15s ease, color 0.15s ease',
+                  }}
+                >
+                  {opt.label}
+                </button>
+              );
+            })}
+          </div>
+          {errors.dietPreference && (
+            <p className="warn" style={{ marginTop: '4px' }}>{errors.dietPreference}</p>
+          )}
+        </div>
 
         {/* Body Weight Input */}
         <div>
