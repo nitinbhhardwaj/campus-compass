@@ -1,5 +1,4 @@
 import React, { useEffect, useRef } from 'react';
-import { X } from 'lucide-react';
 
 export interface ModalProps {
   isOpen: boolean;
@@ -34,7 +33,16 @@ export const Modal: React.FC<ModalProps> = ({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-slate-900/50 dark:bg-black/70 backdrop-blur-xs transition-opacity"
+      style={{
+        position: 'fixed',
+        inset: 0,
+        zIndex: 50,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        padding: '16px',
+        background: 'rgba(15, 20, 38, 0.6)',
+      }}
       onClick={onClose}
     >
       <div
@@ -42,22 +50,61 @@ export const Modal: React.FC<ModalProps> = ({
         role="dialog"
         aria-modal="true"
         aria-labelledby="modal-title"
-        className="w-full sm:max-w-md bg-white dark:bg-slate-900 rounded-t-3xl sm:rounded-2xl shadow-xl border border-slate-100 dark:border-slate-800 overflow-hidden animate-in fade-in slide-in-from-bottom duration-200"
+        style={{
+          width: '100%',
+          maxWidth: '480px',
+          background: 'var(--surface)',
+          border: '2px solid var(--ink)',
+          borderRadius: '4px',
+          overflow: 'hidden',
+        }}
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="flex items-center justify-between px-5 py-4 border-b border-slate-100 dark:border-slate-800">
-          <h2 id="modal-title" className="text-base font-semibold text-slate-800 dark:text-slate-100">
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            padding: '14px 20px',
+            borderBottom: '2px solid var(--ink)',
+          }}
+        >
+          <h2
+            id="modal-title"
+            style={{
+              fontFamily: '"Bricolage Grotesque", system-ui, sans-serif',
+              fontSize: '20px',
+              fontWeight: 800,
+              color: 'var(--ink)',
+              margin: 0,
+            }}
+          >
             {title}
           </h2>
           <button
+            type="button"
             onClick={onClose}
-            className="p-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer focus:outline-none focus:ring-2 focus:ring-indigo-500"
             aria-label="Close dialog"
+            style={{
+              width: '44px',
+              height: '44px',
+              border: 0,
+              background: 'none',
+              color: 'var(--ink)',
+              fontSize: '24px',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              lineHeight: 1,
+            }}
           >
-            <X className="w-5 h-5" />
+            ×
           </button>
         </div>
-        <div className="p-5 max-h-[85vh] overflow-y-auto">{children}</div>
+        <div style={{ padding: '20px', maxHeight: '80vh', overflowY: 'auto' }}>
+          {children}
+        </div>
       </div>
     </div>
   );

@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { CreateTaskDTO, Task, TaskCategory, TaskPriority, TaskRecurrence } from '../../../types/task';
-import { Button } from '../../../components/Button';
 
 interface TaskFormProps {
   initialDueDate: string;
@@ -17,10 +16,10 @@ const CATEGORIES: { label: string; value: TaskCategory }[] = [
   { label: 'Other', value: 'other' },
 ];
 
-const PRIORITIES: { label: string; value: TaskPriority; desc: string }[] = [
-  { label: 'P1 High', value: 1, desc: 'Urgent' },
-  { label: 'P2 Med', value: 2, desc: 'Normal' },
-  { label: 'P3 Low', value: 3, desc: 'Optional' },
+const PRIORITIES: { label: string; value: TaskPriority }[] = [
+  { label: 'P1 High', value: 1 },
+  { label: 'P2 Med', value: 2 },
+  { label: 'P3 Low', value: 3 },
 ];
 
 const RECURRENCES: { label: string; value: TaskRecurrence }[] = [
@@ -87,21 +86,18 @@ export const TaskForm: React.FC<TaskFormProps> = ({
   };
 
   return (
-    <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+    <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
       {error && (
-        <div
-          role="alert"
-          className="p-3 text-xs rounded-xl bg-rose-50 dark:bg-rose-950/50 text-rose-700 dark:text-rose-300 border border-rose-200 dark:border-rose-900"
-        >
+        <div className="warn" role="alert">
           {error}
         </div>
       )}
 
-      {/* Task Title Input */}
+      {/* Title */}
       <div>
         <label
           htmlFor="task-title"
-          className="block text-xs font-semibold uppercase tracking-wider text-slate-600 dark:text-slate-400 mb-1.5"
+          style={{ display: 'block', fontSize: '13px', fontWeight: 600, color: 'var(--muted)', marginBottom: '4px' }}
         >
           Task Description
         </label>
@@ -110,23 +106,27 @@ export const TaskForm: React.FC<TaskFormProps> = ({
           type="text"
           value={title}
           onChange={(e) => setTitle(e.target.value)}
-          placeholder="e.g., Read CS 240 Ch. 3 or Push Day"
-          className="w-full px-3.5 py-2.5 text-sm bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl focus:bg-white dark:focus:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
-          autoFocus
+          placeholder="e.g. DBMS assignment, Q3 to Q6"
           required
+          autoFocus
+          style={{
+            width: '100%',
+            padding: '8px 12px',
+            border: '2px solid var(--ink)',
+            borderRadius: '4px',
+            background: 'var(--surface)',
+            color: 'var(--text)',
+            font: '600 15px "Hanken Grotesk", sans-serif',
+          }}
         />
       </div>
 
-      {/* Category Pills */}
+      {/* Category Selection */}
       <div>
-        <span className="block text-xs font-semibold uppercase tracking-wider text-slate-600 dark:text-slate-400 mb-1.5">
+        <span style={{ display: 'block', fontSize: '13px', fontWeight: 600, color: 'var(--muted)', marginBottom: '6px' }}>
           Category
         </span>
-        <div
-          role="radiogroup"
-          aria-label="Category selection"
-          className="grid grid-cols-3 sm:grid-cols-5 gap-1.5"
-        >
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }} role="radiogroup" aria-label="Category selection">
           {CATEGORIES.map((cat) => (
             <button
               key={cat.value}
@@ -134,11 +134,8 @@ export const TaskForm: React.FC<TaskFormProps> = ({
               role="radio"
               aria-checked={category === cat.value}
               onClick={() => setCategory(cat.value)}
-              className={`py-2 text-xs font-medium rounded-xl border text-center transition-all cursor-pointer focus:outline-none focus:ring-2 focus:ring-indigo-500 ${
-                category === cat.value
-                  ? 'bg-indigo-50 dark:bg-indigo-950/60 border-indigo-500 text-indigo-700 dark:text-indigo-300 font-semibold shadow-2xs'
-                  : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700'
-              }`}
+              className={`chip ${category === cat.value ? 'active' : ''}`}
+              style={{ minHeight: '38px', padding: '0 12px', fontSize: '13px' }}
             >
               {cat.label}
             </button>
@@ -146,16 +143,12 @@ export const TaskForm: React.FC<TaskFormProps> = ({
         </div>
       </div>
 
-      {/* Priority Selector */}
+      {/* Priority Selection */}
       <div>
-        <span className="block text-xs font-semibold uppercase tracking-wider text-slate-600 dark:text-slate-400 mb-1.5">
-          Priority Level
+        <span style={{ display: 'block', fontSize: '13px', fontWeight: 600, color: 'var(--muted)', marginBottom: '6px' }}>
+          Priority
         </span>
-        <div
-          role="radiogroup"
-          aria-label="Priority level selection"
-          className="grid grid-cols-3 gap-2"
-        >
+        <div style={{ display: 'flex', gap: '6px' }} role="radiogroup" aria-label="Priority level selection">
           {PRIORITIES.map((p) => (
             <button
               key={p.value}
@@ -163,36 +156,22 @@ export const TaskForm: React.FC<TaskFormProps> = ({
               role="radio"
               aria-checked={priority === p.value}
               onClick={() => setPriority(p.value)}
-              className={`p-2 rounded-xl border text-left transition-all cursor-pointer focus:outline-none focus:ring-2 focus:ring-indigo-500 ${
-                priority === p.value
-                  ? 'bg-indigo-600 text-white border-indigo-600 shadow-xs'
-                  : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700'
-              }`}
+              className={`chip ${priority === p.value ? 'active' : ''}`}
+              style={{ minHeight: '44px', flex: 1, fontSize: '13px' }}
             >
-              <div className="text-xs font-bold">{p.label}</div>
-              <div
-                className={`text-[10px] ${
-                  priority === p.value ? 'text-indigo-100' : 'text-slate-400 dark:text-slate-500'
-                }`}
-              >
-                {p.desc}
-              </div>
+              {p.label}
             </button>
           ))}
         </div>
       </div>
 
-      {/* Schedule / Recurrence & Due Date */}
-      <div className="grid grid-cols-2 gap-3">
+      {/* Recurrence & Due Date */}
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
         <div>
-          <span className="block text-xs font-semibold uppercase tracking-wider text-slate-600 dark:text-slate-400 mb-1.5">
+          <span style={{ display: 'block', fontSize: '13px', fontWeight: 600, color: 'var(--muted)', marginBottom: '6px' }}>
             Recurrence
           </span>
-          <div
-            role="radiogroup"
-            aria-label="Recurrence selection"
-            className="flex rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 p-0.5"
-          >
+          <div style={{ display: 'flex', gap: '4px' }} role="radiogroup" aria-label="Recurrence selection">
             {RECURRENCES.map((r) => (
               <button
                 key={r.value}
@@ -200,11 +179,8 @@ export const TaskForm: React.FC<TaskFormProps> = ({
                 role="radio"
                 aria-checked={recurrence === r.value}
                 onClick={() => setRecurrence(r.value)}
-                className={`flex-1 py-1.5 text-xs font-medium rounded-lg text-center transition-all cursor-pointer focus:outline-none focus:ring-2 focus:ring-indigo-500 ${
-                  recurrence === r.value
-                    ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 shadow-xs font-semibold'
-                    : 'text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200'
-                }`}
+                className={`chip ${recurrence === r.value ? 'active' : ''}`}
+                style={{ minHeight: '36px', flex: 1, padding: '0 8px', fontSize: '12px' }}
               >
                 {r.label}
               </button>
@@ -215,7 +191,7 @@ export const TaskForm: React.FC<TaskFormProps> = ({
         <div>
           <label
             htmlFor="task-due-date"
-            className="block text-xs font-semibold uppercase tracking-wider text-slate-600 dark:text-slate-400 mb-1.5"
+            style={{ display: 'block', fontSize: '13px', fontWeight: 600, color: 'var(--muted)', marginBottom: '6px' }}
           >
             {recurrence === 'none' ? 'Due Date' : 'Start Date'}
           </label>
@@ -224,35 +200,47 @@ export const TaskForm: React.FC<TaskFormProps> = ({
             type="date"
             value={dueDate}
             onChange={(e) => setDueDate(e.target.value)}
-            className="w-full px-3 py-1.5 text-xs bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl focus:bg-white dark:focus:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
             required
+            style={{
+              width: '100%',
+              padding: '6px 8px',
+              border: '2px solid var(--ink)',
+              borderRadius: '4px',
+              background: 'var(--surface)',
+              color: 'var(--text)',
+              font: '13px "Hanken Grotesk", sans-serif',
+              minHeight: '36px',
+            }}
           />
         </div>
       </div>
 
-      {/* Action Buttons */}
-      <div className="flex items-center justify-end gap-2 pt-2 border-t border-slate-100 dark:border-slate-800">
-        <Button
+      {/* Actions */}
+      <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px', marginTop: '8px' }}>
+        <button
           type="button"
-          variant="secondary"
-          size="md"
           onClick={onClose}
           disabled={isSubmitting}
+          style={{
+            border: 0,
+            background: 'none',
+            color: 'var(--muted)',
+            font: '600 14px "Hanken Grotesk", sans-serif',
+            padding: '0 12px',
+            cursor: 'pointer',
+            minHeight: '44px',
+          }}
         >
           Cancel
-        </Button>
-        <Button
+        </button>
+        <button
           type="submit"
-          variant="primary"
-          size="md"
           disabled={isSubmitting}
+          className="chip active"
+          style={{ minHeight: '44px' }}
         >
-          {isSubmitting
-            ? 'Saving...'
-            : isEditing
-            ? 'Save Changes'
-            : 'Add to Schedule'}
-        </Button>
+          {isSubmitting ? 'Saving...' : isEditing ? 'Save Changes' : 'Add to Schedule'}
+        </button>
       </div>
     </form>
   );
