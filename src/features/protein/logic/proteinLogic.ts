@@ -61,6 +61,7 @@ export interface SettingsValidationResult {
   errors: {
     bodyWeightKg?: string;
     goalGrams?: string;
+    dietPreference?: string;
   };
 }
 
@@ -87,6 +88,15 @@ export function validateProteinSettings(
     } else if (settings.goalGrams > 500) {
       errors.goalGrams = 'Goal must be 500 grams or less.';
     }
+  }
+
+  if (
+    settings.dietPreference !== undefined &&
+    settings.dietPreference !== 'veg' &&
+    settings.dietPreference !== 'egg' &&
+    settings.dietPreference !== 'non-veg'
+  ) {
+    errors.dietPreference = 'Diet preference must be veg, egg, or non-veg.';
   }
 
   return {

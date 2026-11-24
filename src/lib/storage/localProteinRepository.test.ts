@@ -35,6 +35,7 @@ describe('LocalStorageProteinRepository', () => {
     expect(entries.length).toBeGreaterThan(0);
     expect(settings.bodyWeightKg).toBe(70);
     expect(settings.goalGrams).toBe(112);
+    expect(settings.dietPreference).toBe('veg');
   });
 
   it('saves and retrieves a new protein entry asynchronously', async () => {
@@ -78,6 +79,7 @@ describe('LocalStorageProteinRepository', () => {
     const newSettings: ProteinSettings = {
       bodyWeightKg: 75,
       goalGrams: 130, // custom overridden goal
+      dietPreference: 'egg',
     };
 
     await repo.saveSettings(newSettings);
@@ -85,5 +87,19 @@ describe('LocalStorageProteinRepository', () => {
 
     expect(retrieved.bodyWeightKg).toBe(75);
     expect(retrieved.goalGrams).toBe(130);
+    expect(retrieved.dietPreference).toBe('egg');
+  });
+
+  it('loads old-format settings without dietPreference and defaults to veg', async () => {
+    const repo = new LocalStorageProteinRepository(testEntriesKey, testSettingsKey);
+    mockStorage[testSettingsKey] = JSON.stringify({
+      bodyWeightKg: 65,
+      goalGrams: 104,
+    });
+
+    const loaded = await repo.getSettings();
+    expect(loaded.bodyWeightKg).toBe(65);
+    expect(loaded.goalGrams).toBe(104);
+    expect(loaded.dietPreference).toBe('veg');
   });
 });

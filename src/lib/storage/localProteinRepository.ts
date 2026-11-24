@@ -8,6 +8,7 @@ const SETTINGS_KEY = 'campus_compass_protein_settings_v1';
 export const DEFAULT_PROTEIN_SETTINGS: ProteinSettings = {
   bodyWeightKg: 70,
   goalGrams: defaultGoalFromWeight(70), // 112g
+  dietPreference: 'veg',
 };
 
 export const INITIAL_SEED_PROTEIN_ENTRIES: ProteinEntry[] = [
@@ -80,7 +81,16 @@ export class LocalStorageProteinRepository implements ProteinRepository {
         this.writeSettings(DEFAULT_PROTEIN_SETTINGS);
         return { ...DEFAULT_PROTEIN_SETTINGS };
       }
-      return JSON.parse(raw) as ProteinSettings;
+      const parsed = JSON.parse(raw);
+      const dietPreference =
+        parsed.dietPreference === 'egg' || parsed.dietPreference === 'non-veg'
+          ? parsed.dietPreference
+          : 'veg';
+      return {
+        bodyWeightKg: typeof parsed.bodyWeightKg === 'number' ? parsed.bodyWeightKg : DEFAULT_PROTEIN_SETTINGS.bodyWeightKg,
+        goalGrams: typeof parsed.goalGrams === 'number' ? parsed.goalGrams : DEFAULT_PROTEIN_SETTINGS.goalGrams,
+        dietPreference,
+      };
     } catch (err) {
       console.error('Failed to read protein settings from localStorage:', err);
       return { ...DEFAULT_PROTEIN_SETTINGS };

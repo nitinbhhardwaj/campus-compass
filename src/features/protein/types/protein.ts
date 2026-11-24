@@ -6,9 +6,12 @@ export interface ProteinEntry {
   createdAt: string;  // ISO 8601 timestamp
 }
 
+export type DietPreference = 'veg' | 'egg' | 'non-veg';
+
 export interface ProteinSettings {
   bodyWeightKg: number;
   goalGrams: number;  // Default is bodyWeightKg * 1.6, user-overridable
+  dietPreference: DietPreference;
 }
 
 export type CreateProteinEntryDTO = Omit<ProteinEntry, 'id' | 'createdAt'>;

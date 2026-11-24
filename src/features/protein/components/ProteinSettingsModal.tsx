@@ -63,6 +63,7 @@ export const ProteinSettingsModal: React.FC<ProteinSettingsModalProps> = ({
       await onSave({
         bodyWeightKg: parsedWeight,
         goalGrams: Math.round(parsedGoal),
+        dietPreference: currentSettings.dietPreference || 'veg',
       });
       onClose();
     } catch (err) {
