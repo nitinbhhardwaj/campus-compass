@@ -18,6 +18,10 @@ import { buildDaySnapshot } from './app/buildDaySnapshot';
 import { generateSuggestions } from './features/suggestions/logic/engine';
 import { SuggestionsCard } from './features/suggestions/components/SuggestionsCard';
 import { useTheme } from './lib/theme';
+import { useAssistant } from './features/assistant/hooks/useAssistant';
+import { AssistantTrigger } from './features/assistant/components/AssistantTrigger';
+import { AssistantModal } from './features/assistant/components/AssistantModal';
+import { executeIntents } from './app/executeIntents';
 
 export default function App() {
   const { theme, toggleTheme } = useTheme();
@@ -71,6 +75,49 @@ export default function App() {
     isLoading: isExpensesLoading,
     error: expenseError,
   } = useExpenses(undefined, today);
+
+  const {
+    isOpen: isAssistantOpen,
+    openAssistant,
+    closeAssistant,
+    settings: assistantSettings,
+    updateSettings: updateAssistantSettings,
+    inputText: assistantInputText,
+    setInputText: setAssistantInputText,
+    isParsing: assistantIsParsing,
+    error: assistantError,
+    pendingIntents: assistantPendingIntents,
+    clarifyPrompt: assistantClarifyPrompt,
+    parseUtterance: parseAssistantUtterance,
+    updateIntent: updateAssistantIntent,
+    removeIntent: removeAssistantIntent,
+    clearIntents: clearAssistantIntents,
+    confirmIntents: confirmAssistantIntents,
+    isListening: assistantIsListening,
+    startListening: startAssistantListening,
+    stopListening: stopAssistantListening,
+    isSpeechRecognitionSupported,
+  } = useAssistant(today);
+
+  const handleConfirmAssistantIntents = async () => {
+    await confirmAssistantIntents(async (intents) => {
+      await executeIntents(
+        intents,
+        {
+          addTask: async (dto) => {
+            await addTask(dto);
+          },
+          addExpense: async (dto) => {
+            await addExpense(dto);
+          },
+          addProtein: async (dto) => {
+            await addProteinEntry(dto);
+          },
+        },
+        today
+      );
+    });
+  };
 
   const [isAddTaskModalOpen, setIsAddTaskModalOpen] = useState(false);
   const [taskToEdit, setTaskToEdit] = useState<Task | null>(null);
@@ -304,6 +351,36 @@ export default function App() {
           await updateExpenseSettings(newSettings);
         }}
         onClose={() => setIsExpenseSettingsOpen(false)}
+      />
+
+      {/* Floating AI Assistant Trigger */}
+      <AssistantTrigger
+        onClick={openAssistant}
+        assistantName={assistantSettings.assistantName}
+      />
+
+      {/* Conversational Assistant Modal / Sheet */}
+      <AssistantModal
+        isOpen={isAssistantOpen}
+        onClose={closeAssistant}
+        assistantName={assistantSettings.assistantName}
+        isListening={assistantIsListening}
+        startListening={startAssistantListening}
+        stopListening={stopAssistantListening}
+        isSpeechSupported={isSpeechRecognitionSupported}
+        inputText={assistantInputText}
+        setInputText={setAssistantInputText}
+        onParse={parseAssistantUtterance}
+        isParsing={assistantIsParsing}
+        error={assistantError}
+        pendingIntents={assistantPendingIntents}
+        clarifyPrompt={assistantClarifyPrompt}
+        onUpdateIntent={updateAssistantIntent}
+        onRemoveIntent={removeAssistantIntent}
+        onConfirmAll={handleConfirmAssistantIntents}
+        onClear={clearAssistantIntents}
+        settings={assistantSettings}
+        onSaveSettings={updateAssistantSettings}
       />
     </>
   );

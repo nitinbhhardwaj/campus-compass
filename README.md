@@ -39,6 +39,8 @@ College students juggle academic deadlines, fitness routines, daily nutrition, a
   Tracks spending across essentials (Food, Travel, Rent, Subscriptions, Study, Other) against overall and per-category monthly budgets. Includes month-by-month historical navigation, float-safe rupee input parsing, and automated threshold alerts at $\ge 80\%$ budget usage.
 - **Rule-Based Contextual Suggestion Engine:**
   Evaluates real-time student trade-offs across all three modules to surface at most 3 actionable, explainable planning nudges sorted by severity (`warning` > `nudge` > `info`).
+- **Conversational Planning Assistant ("Nova"):**
+  Hands-free, multi-intent voice or text capture (e.g. *"hey Nova, submit DBMS assignment tomorrow, spent 120 on lunch, had 2 eggs"*). Uses browser `SpeechRecognition` (`en-IN` default), serverless edge parsing, prompt-injection defense, and a mandatory confirmation queue with inline item editing before saving. Optional speech synthesis (`SpeechSynthesis`) reads out confirmations and questions.
 
 ---
 
@@ -71,10 +73,12 @@ flowchart TD
         TaskComp["Task Components"]
         ProtComp["ProteinCard"]
         ExpComp["ExpenseCard"]
+        AssistUI["Assistant (Trigger, Sheet, Review)"]
     end
 
-    subgraph AdapterLayer ["Application Adapter (Anti-Corruption Layer)"]
+    subgraph AdapterLayer ["Application Adapters (Anti-Corruption Layer)"]
         Adapter["buildDaySnapshot.ts"]
+        ExecAdapter["executeIntents.ts"]
     end
 
     subgraph Features ["Domain Feature Modules (Bounded Contexts)"]
@@ -82,12 +86,18 @@ flowchart TD
         Protein["src/features/protein (Logic + Hook)"]
         Expenses["src/features/expenses (Logic + Hook)"]
         Suggestions["src/features/suggestions (Rule Engine)"]
+        Assistant["src/features/assistant (Intent Validation + Providers)"]
+    end
+
+    subgraph EdgeBackend ["Edge / Serverless Boundary"]
+        ServerlessParse["api/parse.ts (Rate Limiting, Gemini/OpenAI Keys)"]
     end
 
     subgraph Repositories ["Data Persistence Layer (Async Interfaces)"]
         TaskRepo["TaskRepository"]
         ProteinRepo["ProteinRepository"]
         ExpenseRepo["ExpenseRepository"]
+        AssistRepo["AssistantRepository"]
         Storage[("window.localStorage")]
     end
 
@@ -95,12 +105,20 @@ flowchart TD
     TodayView --> TaskComp
     TodayView --> ProtComp
     TodayView --> ExpComp
+    TodayView --> AssistUI
 
     TodayView --> Adapter
     Adapter -->|Reads State| Tasks
     Adapter -->|Reads State| Protein
     Adapter -->|Reads State| Expenses
     Adapter -->|Constructs DaySnapshot| Suggestions
+
+    AssistUI --> Assistant
+    Assistant -->|HTTP POST| ServerlessParse
+    AssistUI -->|On User Confirmation| ExecAdapter
+    ExecAdapter -->|Dispatches Mutations| Tasks
+    ExecAdapter -->|Dispatches Mutations| Protein
+    ExecAdapter -->|Dispatches Mutations| Expenses
 
     TaskComp --> Tasks
     ProtComp --> Protein
@@ -109,14 +127,16 @@ flowchart TD
     Tasks --> TaskRepo
     Protein --> ProteinRepo
     Expenses --> ExpenseRepo
+    Assistant --> AssistRepo
 
     TaskRepo --> Storage
     ProteinRepo --> Storage
     ExpenseRepo --> Storage
+    AssistRepo --> Storage
 ```
 
 ### Dependency Direction (Hexagonal / Clean Architecture)
-The three primary feature modules (`tasks`, `protein`, `expenses`) are isolated bounded contexts with **zero cross-dependencies** on each other. The suggestion engine (`src/features/suggestions`) does not import or know about tasks, protein, or expense domain models; it depends solely on an abstract input contract (`DaySnapshot`) consisting of plain primitive values. A single application adapter, `src/app/buildDaySnapshot.ts`, is the sole integration point that reads domain state and maps it into the snapshot. All data access is mediated through abstract, asynchronous repository interfaces returning `Promise<T>`. This architecture ensures that replacing `localStorage` with a remote backend or adding new suggestion rules causes zero cascading changes across the codebase.
+The domain feature modules (`tasks`, `protein`, `expenses`, `assistant`) are isolated bounded contexts with **zero cross-dependencies** on each other. The suggestion engine (`src/features/suggestions`) does not import or know about tasks, protein, or expense domain models; it depends solely on an abstract input contract (`DaySnapshot`) consisting of plain primitive values mapped by `src/app/buildDaySnapshot.ts`. Similarly, the assistant module (`src/features/assistant`) defines its own plain discriminated union intent types and is completely unaware of domain repositories; the second application adapter, `src/app/executeIntents.ts`, is the sole bridge mapping confirmed intents to domain operations upon explicit user confirmation. All data access is mediated through abstract, asynchronous repository interfaces returning `Promise<T>`. This architecture ensures that replacing `localStorage` with a remote backend, swapping the LLM provider, or adding new suggestion rules causes zero cascading changes across the codebase.
 
 ---
 
@@ -165,10 +185,14 @@ All screens and feature modules are built using atomic, decoupled UI components:
 
 | Decision | Why It Matters / Interview Defense |
 | :--- | :--- |
+| **The Trust Boundary (Model Output as Untrusted Input)** | Natural language model outputs are non-deterministic and susceptible to prompt injection, hallucinated schema parameters, and malformed structures. In Campus Compass, LLM responses are treated as untrusted external payloads. The `validateIntents` gate enforces strict schema conformance, strips malicious script tags and injection payloads, drops unrecognized intent types (such as unauthorized deletion or modification attempts), bounds multi-intent bursts to 5, and validates calendar dates against real Gregorian calendar boundaries (e.g. rejecting `2026-02-30`). |
+| **Mandatory Human-in-the-Loop Confirmation** | Autonomous agents that directly commit mutations to databases create phantom records, double-counting, and user distress. In Campus Compass, the assistant only parses utterances into a staged confirmation queue. Users retain full autonomy to inspect, edit fields inline (adjusting titles, categories, priorities, due dates, paise amounts, or protein grams), and discard false positives before a single database write is executed via "Confirm all". |
+| **Server-Side Secret Isolation & Edge Rate Limiting** | Storing LLM API keys (`GEMINI_API_KEY`, `OPENAI_API_KEY`, `LLM_API_KEY`) in client applications exposes credentials to reverse-engineering, quota hijacking, and financial liability. The conversational assistant connects through a serverless function (`/api/parse`) running at the edge. The serverless handler enforces strict payload constraints (<10KB body, <1,000 character transcripts) and sliding-window IP rate limiting (max 30 req/min), gracefully falling back to deterministic local heuristic extraction if remote APIs are unavailable. |
+| **Decoupled LLMProvider Interface** | Client modules and UI components never bind directly to a specific LLM vendor SDK. The `LLMProvider` contract requires only `parse(transcript, context): Promise<unknown>`. Production uses `FetchLLMProvider` calling `/api/parse`, while tests and offline environments use `MockLLMProvider`. Providers can be swapped to Gemini, OpenAI, Anthropic, or an on-device local model without altering a single line of business logic or UI code. |
 | **Integer Paise for Money** | In IEEE 754 floating-point arithmetic, binary floating-point fractions cannot represent decimal fractions precisely (e.g. `0.1 + 0.2 === 0.30000000000000004`). In financial apps, float arithmetic produces cumulative rounding errors and off-by-one paise discrepancies. All money is stored and calculated strictly as **integer paise** ($1\text{ INR} = 100\text{ paise}$). Currency conversion from rupee strings (e.g. `"12.5"`) directly into `1250` paise is performed via string splitting and padding without `parseFloat`. INR formatting (`Intl.NumberFormat`) happens strictly at the display boundary. |
 | **Local Date Strings & Injected "Today"** | `date.toISOString().split('T')[0]` converts local time to UTC (GMT+0). For students in non-UTC timezones (e.g. IST UTC+5:30 or PST UTC-8:00) using the app late in the evening, UTC shifts to tomorrow or yesterday, causing tasks to vanish or falsely appear overdue. All dates are formatted using local calendar getters (`formatLocalDate`). Pure functions take `today: string` and `hour: number` as explicit parameters and **never call `new Date()` internally**, making tests 100% deterministic. |
-| **Async Repository Pattern** | UI components and hooks depend strictly on abstract repository interfaces (`TaskRepository`, `ProteinRepository`, `ExpenseRepository`) returning `Promise<T>`. While implemented with `window.localStorage` for local-first zero-config development, swapping to Supabase, SQLite, or an offline sync engine requires writing repository adapters complying with the same interface—**with zero edits to UI components or hooks**. |
-| **Pure-Function Business Logic** | All filtering, sorting, recurrence, streaks, weekly summaries, budget totals, and suggestion rules are pure functions isolated from React lifecycle and DOM APIs. They execute in memory in <300ms across 97 unit tests without requiring DOM mocking libraries or test flakiness. |
+| **Async Repository Pattern** | UI components and hooks depend strictly on abstract repository interfaces (`TaskRepository`, `ProteinRepository`, `ExpenseRepository`, `AssistantRepository`) returning `Promise<T>`. While implemented with `window.localStorage` for local-first zero-config development, swapping to Supabase, SQLite, or an offline sync engine requires writing repository adapters complying with the same interface—**with zero edits to UI components or hooks**. |
+| **Pure-Function Business Logic** | All filtering, sorting, recurrence, streaks, weekly summaries, budget totals, suggestion rules, and intent validation gates are pure functions isolated from React lifecycle and DOM APIs. They execute in memory in <500ms across 129 unit tests without requiring DOM mocking libraries or test flakiness. |
 
 ---
 
@@ -185,7 +209,7 @@ All screens and feature modules are built using atomic, decoupled UI components:
 
 ## 🧪 Testing & Verification
 
-The codebase includes **97 unit tests** powered by **Vitest**, covering domain logic, boundary conditions, input parsers, and repository adapters:
+The codebase includes **129 unit tests** powered by **Vitest**, covering domain logic, boundary conditions, input parsers, intent safety gates, and repository adapters:
 
 ```bash
 # Run the complete unit test suite
@@ -200,8 +224,10 @@ npm run test:watch
 - **Protein Logic (17 tests):** Body weight multiplier ($1.6\times$), daily summation, remaining protein calculation (floored at 0), display percentage capping at 100%, chronological sorting, settings input validation.
 - **Expenses Logic (15 tests):** Float-safe string-to-paise parser (`"12.5"` $\to$ 1250, `"100"` $\to$ 10000, `"0.75"` $\to$ 75), INR formatting, monthly totals, category totals, remaining budget, uncapped budget percentages, budget status transitions (ok, warning $\ge 80\%$, over $> 100\%$), category warning detection.
 - **Suggestion Engine & Rules (24 tests):** Every rule tested for trigger, non-trigger, and exact numerical boundaries (hour 17 vs 18, 59% vs 60%, 79% vs 80%, 2 vs 3 overdue tasks, 4 vs 5 study completions), severity ranking order (`warning` $>$ `nudge` $>$ `info`), max-3 capping, and empty state output.
-- **Anti-Corruption Adapter (1 test):** `buildDaySnapshot` end-to-end integration mapping from domain models to plain snapshot.
-- **Storage Repositories (12 tests):** Seed data loading, async CRUD operations for Task, Protein, and Expense LocalStorage adapters.
+- **Assistant Intent Validation & Injection Defense (21 tests):** Wake word stripping (`hey Nova`), discriminated union intent parsing (`add_task`, `add_expense`, `add_protein`, `clarify`), prompt-injection sanitization, malformed and adversarial JSON protection, dropping unauthorized intent types, real Gregorian calendar date validation (leap year handling, rejecting invalid days), and the 5-intent per utterance burst cap.
+- **LLM Providers (5 tests):** `FetchLLMProvider` HTTP dispatch and error propagation, `MockLLMProvider` canned and custom parser behavior.
+- **Storage Repositories (16 tests):** Seed data loading, async CRUD operations for Task, Protein, Expense, and Assistant Settings LocalStorage adapters with graceful corruption recovery.
+- **Anti-Corruption & Execution Adapters (3 tests):** `buildDaySnapshot` end-to-end integration and `executeIntents` mapping from assistant intents to domain DTOs without side effects.
 
 ---
 
