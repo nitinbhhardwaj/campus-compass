@@ -1,4 +1,5 @@
 import { useState, useMemo } from 'react';
+import { Routes, Route } from 'react-router-dom';
 import { useTasks } from './features/tasks/hooks/useTasks';
 import { TodayHeader } from './features/tasks/components/TodayHeader';
 import { TaskList } from './features/tasks/components/TaskList';
@@ -22,6 +23,10 @@ import { useAssistant } from './features/assistant/hooks/useAssistant';
 import { AssistantTrigger } from './features/assistant/components/AssistantTrigger';
 import { AssistantModal } from './features/assistant/components/AssistantModal';
 import { executeIntents } from './app/executeIntents';
+import { PrivacyPolicy } from './pages/PrivacyPolicy';
+import { TermsOfService } from './pages/TermsOfService';
+import { NotFound } from './pages/NotFound';
+import { Footer } from './components/Footer';
 
 export default function App() {
   const { theme, toggleTheme } = useTheme();
@@ -195,7 +200,7 @@ export default function App() {
     const count = suggestions.length;
     if (count === 0) return "You're completely on track today.";
     if (count === 1) return "One thing can't wait today.";
-    if (count === 2) return "Two things can’t wait today.";
+    if (count === 2) return "Two things can't wait today.";
     return `${count} things can't wait today.`;
   }, [suggestions.length]);
 
@@ -211,106 +216,121 @@ export default function App() {
         Theme: {theme}
       </button>
 
-      <div className="wrap">
-        <p className="date">{formattedDate}</p>
-        <h1>{headline}</h1>
+      <Routes>
+        <Route
+          path="/"
+          element={
+            <div className="wrap">
+              <p className="date">{formattedDate}</p>
+              <h1>{headline}</h1>
 
-        {/* Global Loading Feedback */}
-        {isLoading && (
-          <div style={{ padding: '24px 0', color: 'var(--muted)', fontSize: '14px' }}>
-            Loading your student dashboard...
-          </div>
-        )}
+              {/* Global Loading Feedback */}
+              {isLoading && (
+                <div style={{ padding: '24px 0', color: 'var(--muted)', fontSize: '14px' }}>
+                  Loading your student dashboard...
+                </div>
+              )}
 
-        {/* Global Error Banner */}
-        {combinedError && (
-          <div className="warn" role="alert" style={{ margin: '14px 0' }}>
-            {combinedError}
-          </div>
-        )}
+              {/* Global Error Banner */}
+              {combinedError && (
+                <div className="warn" role="alert" style={{ margin: '14px 0' }}>
+                  {combinedError}
+                </div>
+              )}
 
-        {/* Highlighter Notes for Suggestions */}
-        <SuggestionsCard suggestions={suggestions} />
+              {/* Highlighter Notes for Suggestions */}
+              <SuggestionsCard suggestions={suggestions} />
 
-        {/* 2-Column Responsive Grid matching mockup */}
-        <div className="grid">
-          {/* Left Column: Your day rail */}
-          <section aria-labelledby="day">
-            <TodayHeader
-              today={today}
-              totalTasks={stats.total}
-              completedTasks={stats.completed}
-              overdueCount={stats.overdueCount}
-              completionPercentage={stats.percentage}
-              onOpenAddModal={handleOpenAddTaskModal}
-            />
+              {/* 2-Column Responsive Grid matching mockup */}
+              <div className="grid">
+                {/* Left Column: Your day rail */}
+                <section aria-labelledby="day">
+                  <TodayHeader
+                    today={today}
+                    totalTasks={stats.total}
+                    completedTasks={stats.completed}
+                    overdueCount={stats.overdueCount}
+                    completionPercentage={stats.percentage}
+                    onOpenAddModal={handleOpenAddTaskModal}
+                  />
 
-            <WeeklySummaryCard
-              summary={weeklySummary}
-              weekStart={weekRange.startDate}
-              weekEnd={weekRange.endDate}
-            />
+                  <WeeklySummaryCard
+                    summary={weeklySummary}
+                    weekStart={weekRange.startDate}
+                    weekEnd={weekRange.endDate}
+                  />
 
-            <CategoryFilter
-              selected={categoryFilter}
-              onChange={setCategoryFilter}
-              categoryCounts={categoryCounts}
-            />
+                  <CategoryFilter
+                    selected={categoryFilter}
+                    onChange={setCategoryFilter}
+                    categoryCounts={categoryCounts}
+                  />
 
-            <TaskList
-              tasks={filteredTasks}
-              today={today}
-              categoryFilter={categoryFilter}
-              onClearCategoryFilter={() => setCategoryFilter('all')}
-              onToggle={toggleTask}
-              onEdit={handleOpenEditTaskModal}
-              onDelete={deleteTask}
-              onOpenAddModal={handleOpenAddTaskModal}
-            />
-          </section>
+                  <TaskList
+                    tasks={filteredTasks}
+                    today={today}
+                    categoryFilter={categoryFilter}
+                    onClearCategoryFilter={() => setCategoryFilter('all')}
+                    onToggle={toggleTask}
+                    onEdit={handleOpenEditTaskModal}
+                    onDelete={deleteTask}
+                    onOpenAddModal={handleOpenAddTaskModal}
+                  />
+                </section>
 
-          {/* Right Column: Side cards (Protein bottle & Expense ledger) */}
-          <div className="side">
-            <ProteinCard
-              today={today}
-              totalGrams={proteinTotal}
-              goalGrams={proteinSettings.goalGrams}
-              remainingGrams={proteinRemaining}
-              progress={proteinProgress}
-              todayEntries={todayProteinEntries}
-              onAddEntry={async (dto) => {
-                await addProteinEntry(dto);
-              }}
-              onDeleteEntry={async (id) => {
-                await deleteProteinEntry(id);
-              }}
-              onOpenSettings={() => setIsProteinSettingsOpen(true)}
-            />
+                {/* Right Column: Side cards (Protein bottle & Expense ledger) */}
+                <div className="side">
+                  <ProteinCard
+                    today={today}
+                    totalGrams={proteinTotal}
+                    goalGrams={proteinSettings.goalGrams}
+                    remainingGrams={proteinRemaining}
+                    progress={proteinProgress}
+                    todayEntries={todayProteinEntries}
+                    onAddEntry={async (dto) => {
+                      await addProteinEntry(dto);
+                    }}
+                    onDeleteEntry={async (id) => {
+                      await deleteProteinEntry(id);
+                    }}
+                    onOpenSettings={() => setIsProteinSettingsOpen(true)}
+                  />
 
-            <ExpenseCard
-              selectedMonth={selectedMonth}
-              selectedMonthDisplay={formatMonthDisplay(selectedMonth)}
-              totalSpentPaise={totalSpentPaise}
-              monthlyBudgetPaise={expenseSettings.monthlyBudgetPaise}
-              remainingBudgetPaise={remainingBudgetPaise}
-              usedPercent={usedPercent}
-              status={expenseStatus}
-              categoryTotals={expenseCategoryTotals}
-              categoryWarnings={expenseCategoryWarnings}
-              monthExpenses={monthExpenses}
-              today={today}
-              onAddExpense={async (dto) => {
-                await addExpense(dto);
-              }}
-              onDeleteExpense={async (id) => {
-                await deleteExpense(id);
-              }}
-              onPreviousMonth={goToPreviousMonth}
-              onNextMonth={goToNextMonth}
-              onOpenSettings={() => setIsExpenseSettingsOpen(true)}
-            />
-          </div>
-        </div>
+                  <ExpenseCard
+                    selectedMonth={selectedMonth}
+                    selectedMonthDisplay={formatMonthDisplay(selectedMonth)}
+                    totalSpentPaise={totalSpentPaise}
+                    monthlyBudgetPaise={expenseSettings.monthlyBudgetPaise}
+                    remainingBudgetPaise={remainingBudgetPaise}
+                    usedPercent={usedPercent}
+                    status={expenseStatus}
+                    categoryTotals={expenseCategoryTotals}
+                    categoryWarnings={expenseCategoryWarnings}
+                    monthExpenses={monthExpenses}
+                    today={today}
+                    onAddExpense={async (dto) => {
+                      await addExpense(dto);
+                    }}
+                    onDeleteExpense={async (id) => {
+                      await deleteExpense(id);
+                    }}
+                    onPreviousMonth={goToPreviousMonth}
+                    onNextMonth={goToNextMonth}
+                    onOpenSettings={() => setIsExpenseSettingsOpen(true)}
+                  />
+                </div>
+              </div>
+            </div>
+          }
+        />
+        <Route path="/privacy" element={<PrivacyPolicy />} />
+        <Route path="/terms" element={<TermsOfService />} />
+        <Route path="*" element={<NotFound />} />
+      </Routes>
+
+      {/* Shared Footer on Every Screen */}
+      <div className="wrap" style={{ paddingTop: 0, paddingBottom: '32px' }}>
+        <Footer onClearAllData={() => window.location.reload()} />
       </div>
 
       {/* Modal for adding / editing tasks */}
