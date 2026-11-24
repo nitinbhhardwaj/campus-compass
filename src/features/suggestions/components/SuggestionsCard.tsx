@@ -37,7 +37,7 @@ export const SuggestionsCard: React.FC<SuggestionsCardProps> = ({ suggestions })
               <div
                 key={suggestion.id}
                 className="note"
-                style={isEven ? { transform: 'rotate(0.5deg)', marginLeft: '14px' } : undefined}
+                style={isEven ? { transform: 'rotate(0.5deg)' } : undefined}
               >
                 <button
                   type="button"

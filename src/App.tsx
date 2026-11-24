@@ -206,23 +206,27 @@ export default function App() {
 
   return (
     <>
-      {/* Theme Toggle Button matching mockup */}
-      <button
-        className="toggle"
-        id="theme"
-        onClick={toggleTheme}
-        aria-label="Switch light or dark theme"
-      >
-        Theme: {theme}
-      </button>
-
       <Routes>
         <Route
           path="/"
           element={
             <div className="wrap">
-              <p className="date">{formattedDate}</p>
-              <h1>{headline}</h1>
+              <header className="header-row">
+                <div className="header-greeting">
+                  <p className="date">{formattedDate}</p>
+                  <h1>{headline}</h1>
+                </div>
+                <div className="header-actions">
+                  <button
+                    className="toggle"
+                    id="theme"
+                    onClick={toggleTheme}
+                    aria-label="Switch light or dark theme"
+                  >
+                    Theme: {theme}
+                  </button>
+                </div>
+              </header>
 
               {/* Global Loading Feedback */}
               {isLoading && (
@@ -241,8 +245,8 @@ export default function App() {
               {/* Highlighter Notes for Suggestions */}
               <SuggestionsCard suggestions={suggestions} />
 
-              {/* 2-Column Responsive Grid matching mockup */}
-              <div className="grid">
+              {/* Responsive Grid matching spec */}
+              <div className="dashboard-grid">
                 {/* Left Column: Your day rail */}
                 <section aria-labelledby="day">
                   <TodayHeader
