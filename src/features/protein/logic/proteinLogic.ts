@@ -1,4 +1,5 @@
-import { ProteinEntry, ProteinSettings } from '../types/protein';
+import { ProteinEntry, ProteinSettings, DietPreference } from '../types/protein';
+import { ProteinPreset } from '../constants/presets';
 
 /**
  * Pure function: Calculates the default daily protein goal (in grams) based on body weight.
@@ -103,4 +104,23 @@ export function validateProteinSettings(
     isValid: Object.keys(errors).length === 0,
     errors,
   };
+}
+
+/**
+ * Pure function: Filters protein presets based on user diet preference.
+ * - 'veg': returns only 'veg' items.
+ * - 'egg': returns 'veg' and 'egg' items.
+ * - 'non-veg': returns all items.
+ */
+export function presetsForDiet(
+  presets: readonly ProteinPreset[],
+  diet: DietPreference
+): ProteinPreset[] {
+  if (diet === 'veg') {
+    return presets.filter((p) => p.diet === 'veg');
+  }
+  if (diet === 'egg') {
+    return presets.filter((p) => p.diet === 'veg' || p.diet === 'egg');
+  }
+  return [...presets];
 }

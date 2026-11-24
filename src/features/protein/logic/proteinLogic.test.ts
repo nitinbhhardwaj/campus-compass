@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { ProteinEntry } from '../types/protein';
+import { ProteinPreset } from '../constants/presets';
 import {
   defaultGoalFromWeight,
   totalForDate,
@@ -7,6 +8,7 @@ import {
   progressPercent,
   entriesForDate,
   validateProteinSettings,
+  presetsForDiet,
 } from './proteinLogic';
 
 describe('proteinLogic pure functions', () => {
@@ -148,6 +150,39 @@ describe('proteinLogic pure functions', () => {
       const result = validateProteinSettings({ bodyWeightKg: 70, goalGrams: 600 });
       expect(result.isValid).toBe(false);
       expect(result.errors.goalGrams).toContain('500 grams');
+    });
+  });
+
+  describe('7. presetsForDiet', () => {
+    const testPresets: ProteinPreset[] = [
+      { id: 'paneer', label: '100g Paneer', grams: 18, description: '', diet: 'veg' },
+      { id: 'dal', label: 'Bowl of Dal', grams: 9, description: '', diet: 'veg' },
+      { id: 'egg', label: 'Egg', grams: 6, description: '', diet: 'egg' },
+      { id: 'chicken', label: '100g Chicken', grams: 27, description: '', diet: 'non-veg' },
+    ];
+
+    it('returns only veg presets when diet is veg', () => {
+      const result = presetsForDiet(testPresets, 'veg');
+      expect(result.map((p) => p.id)).toEqual(['paneer', 'dal']);
+      expect(result.every((p) => p.diet === 'veg')).toBe(true);
+    });
+
+    it('returns veg and egg presets when diet is egg', () => {
+      const result = presetsForDiet(testPresets, 'egg');
+      expect(result.map((p) => p.id)).toEqual(['paneer', 'dal', 'egg']);
+      expect(result.some((p) => p.diet === 'non-veg')).toBe(false);
+    });
+
+    it('returns all presets when diet is non-veg', () => {
+      const result = presetsForDiet(testPresets, 'non-veg');
+      expect(result.map((p) => p.id)).toEqual(['paneer', 'dal', 'egg', 'chicken']);
+      expect(result.length).toBe(testPresets.length);
+    });
+
+    it('returns empty array when given empty presets', () => {
+      expect(presetsForDiet([], 'veg')).toEqual([]);
+      expect(presetsForDiet([], 'egg')).toEqual([]);
+      expect(presetsForDiet([], 'non-veg')).toEqual([]);
     });
   });
 });
