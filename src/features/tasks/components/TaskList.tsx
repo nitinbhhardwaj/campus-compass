@@ -1,10 +1,7 @@
 import React from 'react';
 import { Task } from '../../../types/task';
 import { TaskItem } from './TaskItem';
-import { CheckCircle2, Filter } from 'lucide-react';
 import { CategoryFilterType } from './CategoryFilter';
-import { EmptyState } from '../../../components/EmptyState';
-import { Button } from '../../../components/Button';
 
 interface TaskListProps {
   tasks: Task[];
@@ -28,37 +25,48 @@ export const TaskList: React.FC<TaskListProps> = ({
   onOpenAddModal,
 }) => {
   if (tasks.length === 0) {
-    if (categoryFilter !== 'all') {
-      return (
-        <EmptyState
-          icon={<Filter className="w-5 h-5" />}
-          title={`No ${categoryFilter} tasks for today`}
-          description={`None of your scheduled items today match the ${categoryFilter} category.`}
-          action={
-            <Button variant="ghost" size="sm" onClick={onClearCategoryFilter}>
-              Show all categories
-            </Button>
-          }
-        />
-      );
-    }
-
     return (
-      <EmptyState
-        icon={<CheckCircle2 className="w-5 h-5 text-indigo-500" />}
-        title="No tasks scheduled for today"
-        description="Enjoy the breather, or schedule a study block, workout session, or chore."
-        action={
-          <Button variant="primary" size="sm" onClick={onOpenAddModal}>
+      <div
+        style={{
+          padding: '28px',
+          border: '2px dashed var(--line)',
+          borderRadius: '4px',
+          textAlign: 'center',
+          color: 'var(--muted)',
+          background: 'var(--surface)',
+          marginTop: '14px',
+        }}
+      >
+        <p style={{ margin: 0, fontWeight: 600, fontSize: '15px' }}>
+          {categoryFilter !== 'all'
+            ? `No ${categoryFilter} tasks for today.`
+            : 'No tasks scheduled for today.'}
+        </p>
+        {categoryFilter !== 'all' ? (
+          <button
+            type="button"
+            className="chip"
+            onClick={onClearCategoryFilter}
+            style={{ marginTop: '14px', fontSize: '13px' }}
+          >
+            Show all tasks
+          </button>
+        ) : (
+          <button
+            type="button"
+            className="chip"
+            onClick={onOpenAddModal}
+            style={{ marginTop: '14px', fontSize: '13px' }}
+          >
             + Add your first task
-          </Button>
-        }
-      />
+          </button>
+        )}
+      </div>
     );
   }
 
   return (
-    <div className="flex flex-col gap-2.5" role="list" aria-label="Today's tasks">
+    <ul className="rail" role="list" aria-label="Today's tasks">
       {tasks.map((task) => (
         <TaskItem
           key={task.id}
@@ -69,6 +77,6 @@ export const TaskList: React.FC<TaskListProps> = ({
           onDelete={onDelete}
         />
       ))}
-    </div>
+    </ul>
   );
 };

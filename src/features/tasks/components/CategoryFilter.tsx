@@ -1,6 +1,5 @@
 import React from 'react';
 import { TaskCategory } from '../../../types/task';
-import { Chip } from '../../../components/Chip';
 
 export type CategoryFilterType = TaskCategory | 'all';
 
@@ -26,20 +25,26 @@ export const CategoryFilter: React.FC<CategoryFilterProps> = ({
 }) => {
   return (
     <div
-      role="group"
+      role="tablist"
       aria-label="Filter tasks by category"
-      className="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-1 mb-2"
+      className="chips"
+      style={{ marginTop: 0, marginBottom: '20px' }}
     >
-      {FILTER_ITEMS.map((item) => (
-        <Chip
-          key={item.value}
-          isSelected={selected === item.value}
-          count={categoryCounts[item.value] || 0}
-          onClick={() => onChange(item.value)}
-        >
-          {item.label}
-        </Chip>
-      ))}
+      {FILTER_ITEMS.map((item) => {
+        const count = categoryCounts[item.value] || 0;
+        return (
+          <button
+            key={item.value}
+            type="button"
+            role="tab"
+            aria-selected={selected === item.value}
+            className={`chip ${selected === item.value ? 'active' : ''}`}
+            onClick={() => onChange(item.value)}
+          >
+            {item.label} {count > 0 ? `(${count})` : ''}
+          </button>
+        );
+      })}
     </div>
   );
 };
