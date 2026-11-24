@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Campus Compass</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,800&family=Hanken+Grotesk:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --paper:#EEF1F7; --grid:#DCE2EE; --ink:#1A2B8F; --text:#161B33; --muted:#5B6382;
+  --hl:#FFE24A; --hl-text:#161B33; --line:#C9D1E4; --surface:#F9FAFD; --danger:#C2381F;
+  box-sizing:border-box; padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --paper:#0F1426; --grid:#182039; --ink:#9DB0FF; --text:#E8ECFA; --muted:#8E98BC;
+    --hl:#FFE24A; --hl-text:#161B33; --line:#2A3358; --surface:#151B33; --danger:#FF8A6B;
+  }
+}
+:root[data-theme="dark"]{
+  --paper:#0F1426; --grid:#182039; --ink:#9DB0FF; --text:#E8ECFA; --muted:#8E98BC;
+  --hl:#FFE24A; --hl-text:#161B33; --line:#2A3358; --surface:#151B33; --danger:#FF8A6B;
+}
+*{box-sizing:border-box}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{
+  margin:0; color:var(--text); font:400 16px/1.5 "Hanken Grotesk",system-ui,sans-serif;
+  background-color:var(--paper);
+  background-image:linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px);
+  background-size:28px 28px;
+}
+.wrap{max-width:1040px;margin:0 auto;padding:28px 20px 64px}
+h1,h2{font-family:"Bricolage Grotesque",system-ui,sans-serif;margin:0;letter-spacing:-.02em}
+.date{color:var(--muted);font-size:15px;margin:0 0 6px}
+h1{font-weight:800;font-size:clamp(34px,7vw,60px);line-height:1.02;color:var(--ink);max-width:14ch}
+.grid{display:grid;gap:36px;margin-top:32px}
+@media(min-width:900px){.grid{grid-template-columns:1.25fr .75fr;gap:56px}}
+h2{font-weight:800;font-size:22px;color:var(--ink);margin-bottom:14px}
+
+.notes{display:grid;gap:14px;margin-top:28px}
+.note{background:var(--hl);color:var(--hl-text);padding:14px 16px 14px 18px;border-radius:2px 14px 2px 14px;
+  transform:rotate(-.6deg);box-shadow:3px 3px 0 var(--ink);position:relative}
+.note:nth-child(2){transform:rotate(.5deg);margin-left:14px}
+.note b{font-family:"Bricolage Grotesque",sans-serif;font-weight:800;font-size:18px;display:block;line-height:1.2}
+.note p{margin:4px 0 0;font-size:14.5px}
+.note .why{opacity:.75;font-size:13px}
+.note button{position:absolute;top:2px;right:2px;width:44px;height:44px;border:0;background:none;color:inherit;font-size:20px;cursor:pointer}
+
+.rail{list-style:none;margin:0;padding:0 0 0 22px;border-left:2px solid var(--ink)}
+.rail li{position:relative;padding:12px 0 12px 18px;display:flex;gap:12px;align-items:flex-start;border-bottom:1px dashed var(--line)}
+.rail li:last-child{border-bottom:0}
+.rail li::before{content:"";position:absolute;left:-30px;top:20px;width:12px;height:12px;border-radius:50%;background:var(--paper);border:2px solid var(--ink)}
+.rail li.p1::before{background:var(--ink)}
+.time{width:52px;flex:none;font-size:13px;color:var(--muted);padding-top:3px;font-variant-numeric:tabular-nums}
+.t{flex:1;min-width:0}
+.t strong{font-weight:600;display:block}
+.t span{font-size:13.5px;color:var(--muted)}
+.t .late{color:var(--danger);font-weight:600}
+.chk{appearance:none;width:44px;height:44px;margin:-8px -10px -8px 0;background:none;border:0;cursor:pointer;flex:none;position:relative}
+.chk::after{content:"";position:absolute;inset:11px;border:2px solid var(--ink);border-radius:4px;background:var(--surface)}
+.chk:checked::after{background:var(--ink)}
+.chk:checked::before{content:"";position:absolute;left:17px;top:14px;width:8px;height:13px;border:solid var(--paper);border-width:0 2.5px 2.5px 0;transform:rotate(45deg);z-index:1}
+li:has(.chk:checked) .t strong{text-decoration:line-through;color:var(--muted)}
+.chk:focus-visible,.note button:focus-visible,.chip:focus-visible{outline:3px solid var(--ink);outline-offset:2px}
+
+.protein{display:flex;gap:18px;align-items:flex-end}
+.bottle{width:64px;height:132px;border:2px solid var(--ink);border-radius:10px 10px 18px 18px;position:relative;overflow:hidden;background:var(--surface);flex:none}
+.bottle::before{content:"";position:absolute;top:-8px;left:18px;width:24px;height:8px;background:var(--ink)}
+.fill{position:absolute;left:0;right:0;bottom:0;height:41%;background:var(--ink)}
+.big{font:800 44px/1 "Bricolage Grotesque",sans-serif;color:var(--ink);font-variant-numeric:tabular-nums}
+.sub{color:var(--muted);font-size:14px;margin-top:4px}
+.chips{display:flex;gap:8px;overflow-x:auto;margin-top:16px;padding-bottom:4px}
+.chip{flex:none;min-height:44px;padding:0 14px;border:2px solid var(--ink);background:var(--surface);color:var(--ink);
+  font:600 14px "Hanken Grotesk",sans-serif;border-radius:999px;cursor:pointer}
+.chip:hover{background:var(--ink);color:var(--paper)}
+
+.ledger{margin:0;padding:0;list-style:none;font-variant-numeric:tabular-nums}
+.ledger li{display:flex;justify-content:space-between;padding:9px 0;border-bottom:1px dotted var(--muted)}
+.ledger li:last-child{border:0}
+.bar{height:14px;border:2px solid var(--ink);background:var(--surface);margin:10px 0 6px;border-radius:2px}
+.bar i{display:block;height:100%;width:82%;background:repeating-linear-gradient(45deg,var(--ink) 0 6px,transparent 6px 10px)}
+.warn{color:var(--danger);font-weight:600;font-size:14px}
+section.block{background:var(--surface);border:2px solid var(--ink);padding:20px;border-radius:4px}
+.side{display:grid;gap:28px;align-content:start}
+.toggle{position:absolute;top:14px;right:16px;min-height:44px;padding:0 12px;border:2px solid var(--ink);background:var(--surface);color:var(--ink);font:600 13px "Hanken Grotesk";border-radius:999px;cursor:pointer}
+@media(prefers-reduced-motion:no-preference){.note{transition:transform .2s}.note:hover{transform:rotate(0)}}
+</style>
+</head>
+<body>
+<button class="toggle" id="theme" aria-label="Switch light or dark theme">Theme</button>
+<div class="wrap">
+  <p class="date">Monday, 23 November</p>
+  <h1>Two things can’t wait today.</h1>
+
+  <div class="notes" id="notes">
+    <div class="note">
+      <button aria-label="Dismiss note">×</button>
+      <b>DBMS assignment is due tomorrow. Study first.</b>
+      <p>Laundry and skincare can slide to tonight.</p>
+      <p class="why">Why: a priority 1 study task is due in 1 day.</p>
+    </div>
+    <div class="note">
+      <button aria-label="Dismiss note">×</button>
+      <b>Food budget is at 82%. Eat at the mess.</b>
+      <p>₹560 left for the month.</p>
+      <p class="why">Why: food spending is ₹2,640 of ₹3,200.</p>
+    </div>
+  </div>
+
+  <div class="grid">
+    <section aria-labelledby="day">
+      <h2 id="day">Your day</h2>
+      <ul class="rail">
+        <li class="p1"><span class="time">Now</span><div class="t"><strong>DBMS assignment, Q3 to Q6</strong><span>Study · due tomorrow</span></div><input class="chk" type="checkbox" aria-label="Mark DBMS assignment done"></li>
+        <li><span class="time">5:30</span><div class="t"><strong>Push day</strong><span>Gym · 20 min version suggested</span></div><input class="chk" type="checkbox" aria-label="Mark push day done"></li>
+        <li><span class="time">Night</span><div class="t"><strong>Skincare routine</strong><span>Daily · 12 day streak</span></div><input class="chk" type="checkbox" aria-label="Mark skincare done"></li>
+        <li><span class="time">Late</span><div class="t"><strong>Laundry</strong><span class="late">2 days overdue</span></div><input class="chk" type="checkbox" aria-label="Mark laundry done"></li>
+      </ul>
+    </section>
+
+    <div class="side">
+      <section class="block" aria-labelledby="pro">
+        <h2 id="pro">Protein</h2>
+        <div class="protein">
+          <div class="bottle" role="img" aria-label="41 percent full"><div class="fill"></div></div>
+          <div><div class="big">46 g</div><div class="sub">of 112 g · 66 g to go</div></div>
+        </div>
+        <div class="chips">
+          <button class="chip">Egg 6g</button><button class="chip">Paneer 18g</button><button class="chip">Dal 9g</button><button class="chip">Whey 24g</button><button class="chip">Soya 52g</button>
+        </div>
+        <p class="sub">Preset values are approximate.</p>
+      </section>
+
+      <section class="block" aria-labelledby="mon">
+        <h2 id="mon">Money, November</h2>
+        <div class="big">₹4,120</div>
+        <div class="bar" role="img" aria-label="Food budget 82 percent used"><i></i></div>
+        <div class="warn">Food: 82% of budget used</div>
+        <ul class="ledger" style="margin-top:12px">
+          <li><span>Food</span><span>₹2,640</span></li>
+          <li><span>Travel</span><span>₹880</span></li>
+          <li><span>Subscriptions</span><span>₹600</span></li>
+        </ul>
+      </section>
+    </div>
+  </div>
+</div>
+<script>
+document.querySelectorAll('.note button').forEach(function(b){b.addEventListener('click',function(){b.parentElement.remove()})});
+document.getElementById('theme').addEventListener('click',function(){
+  var r=document.documentElement,d=window.matchMedia('(prefers-color-scheme:dark)').matches;
+  var cur=r.getAttribute('data-theme')||(d?'dark':'light');
+  r.setAttribute('data-theme',cur==='dark'?'light':'dark');
+});
+</script>
+</body>
+</html>
