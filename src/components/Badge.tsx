@@ -1,7 +1,7 @@
 import React from 'react';
 
 export interface BadgeProps {
-  variant?: 'slate' | 'indigo' | 'emerald' | 'amber' | 'rose' | 'purple';
+  variant?: 'slate' | 'indigo' | 'emerald' | 'amber' | 'rose';
   children: React.ReactNode;
   className?: string;
 }
@@ -22,13 +22,11 @@ export const Badge: React.FC<BadgeProps> = ({
       'bg-amber-50 text-amber-800 border-amber-200 dark:bg-amber-950/60 dark:text-amber-300 dark:border-amber-800/80',
     rose:
       'bg-rose-50 text-rose-700 border-rose-200 dark:bg-rose-950/60 dark:text-rose-300 dark:border-rose-800/80',
-    purple:
-      'bg-purple-50 text-purple-700 border-purple-200 dark:bg-purple-950/60 dark:text-purple-300 dark:border-purple-800/80',
   };
 
   return (
     <span
-      className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold border ${variantStyles[variant]} ${className}`}
+      className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold border ${variantStyles[variant]} ${className}`}
     >
       {children}
     </span>

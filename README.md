@@ -2,36 +2,34 @@
 
 > A context-aware daily planner for college students that unifies study blocks, gym habits, protein targets, and student budgets into a single prioritized **Today** view.
 >
-> 🔗 **Live Demo:** [Demo Link Placeholder — Coming Soon](https://campus-compass.example.com)
+> **Live Demo:** [Demo Link Placeholder: Coming Soon](https://campus-compass.example.com)
 
 ---
 
 <!-- Screenshot Placeholders -->
 <div align="center">
-  <p><em>Desktop & Mobile Dashboard Preview</em></p>
-  <!-- Replace with actual screenshots: ![Campus Compass Dashboard](path/to/screenshot1.png) -->
+  <p><em>Desktop and Mobile Dashboard Preview</em></p>
   <img src="https://placehold.co/800x450/4f46e5/ffffff?text=Campus+Compass+Dashboard" alt="Campus Compass Dashboard Preview" width="700" />
 </div>
 
 <br />
 
 <div align="center" style="display: flex; gap: 10px; justify-content: center;">
-  <!-- Replace with mobile views: ![Today Tasks & Suggestions](path/to/screenshot2.png) ![Protein & Expense Cards](path/to/screenshot3.png) -->
-  <img src="https://placehold.co/380x650/0f172a/ffffff?text=Today+Tasks+%26+Nudges" alt="Today View & Suggestions" width="340" />
-  <img src="https://placehold.co/380x650/0f172a/ffffff?text=Protein+%26+Expense+Tracking" alt="Protein & Expense Cards" width="340" />
+  <img src="https://placehold.co/380x650/0f172a/ffffff?text=Today+Tasks+%26+Nudges" alt="Today View and Suggestions" width="340" />
+  <img src="https://placehold.co/380x650/0f172a/ffffff?text=Protein+%26+Expense+Tracking" alt="Protein and Expense Cards" width="340" />
 </div>
 
 ---
 
-## 🎯 The Problem
+## The Problem
 
-College students juggle academic deadlines, fitness routines, daily nutrition, and living expenses across four or five separate, disconnected applications every single day. Because these tools operate in isolated silos, none of them understand real student trade-offs—a task manager will not tell you to defer dorm chores when midterms arrive, and a calorie counter has no awareness of an impending exam or a depleted monthly grocery budget. The result is constant context-switching, cognitive fatigue, and fragmented daily planning that introduces friction rather than clarity.
+College students juggle academic deadlines, fitness routines, daily nutrition, and living expenses across four or five separate, disconnected applications every single day. Because these tools operate in isolated silos, none of them understand real student trade-offs: a task manager will not tell you to defer dorm chores when midterms arrive, and a calorie counter has no awareness of an impending exam or a depleted monthly grocery budget. The result is constant context-switching, cognitive fatigue, and fragmented daily planning that introduces friction rather than clarity.
 
 ---
 
-## ⚡ Core Features
+## Core Features
 
-- **Prioritized Today Agenda & Habit Streaks:**
+- **Prioritized Today Agenda and Habit Streaks:**
   Unified scheduling for study blocks, workouts, skincare, and chores. Non-recurring tasks support overdue resurfacing so past incomplete work is never lost; recurring tasks (daily/weekly) calculate dynamic habit streaks from date logs (`completedDates`) without resetting mid-day.
 - **Daily Protein Tracker:**
   Calculates target protein intake from body weight (`weightKg * 1.6`) with custom override support. Features 8 quick-add student presets (eggs, paneer, dal, whey, chicken, milk, soya chunks, curd) marked with approximate gram values, custom entry logging, and visual progress tracking.
@@ -44,9 +42,9 @@ College students juggle academic deadlines, fitness routines, daily nutrition, a
 
 ---
 
-## 🧠 How Suggestions Work
+## How Suggestions Work
 
-Campus Compass uses a **deterministic, rule-based heuristics engine** rather than an unpredictable, non-deterministic LLM. Every rule is a pure function that evaluates an immutable daily snapshot of facts and outputs an explicit `reason` referencing the exact numerical data that triggered it. Suggestions are planning nudges—never medical, dietary, or financial advice.
+Campus Compass uses a **deterministic, rule-based heuristics engine** rather than an unpredictable, non-deterministic LLM. Every rule is a pure function that evaluates an immutable daily snapshot of facts and outputs an explicit `reason` referencing the exact numerical data that triggered it. Suggestions are planning nudges: never medical, dietary, or financial advice.
 
 ### Example Rules in Action
 
@@ -61,7 +59,7 @@ Campus Compass uses a **deterministic, rule-based heuristics engine** rather tha
 
 ---
 
-## 🏛️ Architecture & Dependency Direction
+## Architecture and Dependency Direction
 
 The application follows **Domain-Driven Design (Bounded Contexts)** and the **Dependency Inversion Principle (DIP)**:
 
@@ -90,7 +88,7 @@ flowchart TD
     end
 
     subgraph EdgeBackend ["Edge / Serverless Boundary"]
-        ServerlessParse["api/parse.ts (Rate Limiting, Gemini/OpenAI Keys)"]
+        ServerlessParse["api/parse.ts (Rate Limiting, LLM Secret Keys)"]
     end
 
     subgraph Repositories ["Data Persistence Layer (Async Interfaces)"]
@@ -114,7 +112,7 @@ flowchart TD
     Adapter -->|Constructs DaySnapshot| Suggestions
 
     AssistUI --> Assistant
-    Assistant -->|HTTP POST| ServerlessParse
+    AssistUI -->|HTTP POST| ServerlessParse
     AssistUI -->|On User Confirmation| ExecAdapter
     ExecAdapter -->|Dispatches Mutations| Tasks
     ExecAdapter -->|Dispatches Mutations| Protein
@@ -140,7 +138,7 @@ The domain feature modules (`tasks`, `protein`, `expenses`, `assistant`) are iso
 
 ---
 
-## 🎨 Design System & UI Architecture
+## Design System and UI Architecture
 
 Campus Compass features a custom, atomic design system crafted for a calm, high-focus productivity experience inspired by Linear, Notion Calendar, and Apple Fitness. It is fully mobile-first and scales seamlessly into a desktop two-column bento dashboard (`lg:grid-cols-12`).
 
@@ -151,13 +149,13 @@ Campus Compass features a custom, atomic design system crafted for a calm, high-
   - Success: `emerald-500` / `emerald-600` (task completion, on-track progress)
   - Warning: `amber-500` / `amber-600` (budget warnings $\ge 80\%$, planning nudges)
   - Danger: `rose-500` / `rose-600` (overdue tasks, budget deficits, critical deadline pressure)
-  - Modules: `purple-500` (rent), `sky-500` (travel), `amber-500` (food/nutrition)
+  - Modules: `indigo-500` (rent), `sky-500` (travel), `amber-500` (food/nutrition)
 - **Typography:** `Inter` variable font with strict typographic hierarchy and tabular numerals (`.tabular-nums`) for currency and numerical metrics.
 - **Spacing Scale:** Standard 4px / 8px grid (`gap-1.5`, `gap-2`, `gap-3`, `gap-4`, `p-4`, `p-5`).
-- **Radius Scale:** Soft modern corners (`rounded-xl` 12px, `rounded-2xl` 16px, `rounded-3xl` 24px).
+- **Radius Scale:** Soft modern corners (`rounded-xl` 12px, `rounded-2xl` 16px, `rounded-3xl` 24px) for cards, and 4px for controls.
 - **Shadow Scale:** Layered soft ambient shadows (`shadow-2xs`, `shadow-xs`, `shadow-sm`, `shadow-md`).
 - **Theme Provider:** Instant dark/light mode toggle supporting system preferences (`prefers-color-scheme`) and manual selection with persistent local caching and zero-flash loading.
-- **Accessibility & Motion:**
+- **Accessibility and Motion:**
   - Strict **44px minimum touch targets** on all mobile controls, chips, and icon triggers (using `min-h-[44px]` or pseudo-element hit-target expansions).
   - WCAG AA compliant text contrast in both light and dark modes.
   - Keyboard focus rings (`focus:ring-2 focus:ring-indigo-500`).
@@ -165,38 +163,38 @@ Campus Compass features a custom, atomic design system crafted for a calm, high-
 
 ### 2. Reusable Component Library (`src/components/`)
 All screens and feature modules are built using atomic, decoupled UI components:
-| Component | Path | Description & Capabilities |
+| Component | Path | Description and Capabilities |
 | :--- | :--- | :--- |
 | **`Card`** | `src/components/Card.tsx` | Base container surface with rounded-2xl border, soft shadow, and dark mode background tokens. |
 | **`Button`** | `src/components/Button.tsx` | Accessible button with `primary`, `secondary`, `ghost`, and `danger` variants; supports sizes, loading states, and minimum 44px hit-target. |
 | **`IconButton`** | `src/components/IconButton.tsx` | Icon-only button with mandatory `aria-label`, 44px touch target padding, and hover/focus rings. |
-| **`Badge`** | `src/components/Badge.tsx` | Status and category indicators (`indigo`, `emerald`, `amber`, `rose`, `purple`, `slate`). |
+| **`Badge`** | `src/components/Badge.tsx` | Status and category indicators (`indigo`, `emerald`, `amber`, `rose`, `slate`). |
 | **`Chip`** | `src/components/Chip.tsx` | Interactive filter pill with active/inactive states and badge counter support. |
 | **`ProgressBar`** | `src/components/ProgressBar.tsx` | Animated horizontal progress bar with semantic color variants. |
 | **`ProgressRing`** | `src/components/ProgressRing.tsx` | SVG circular progress ring with stroke-dashoffset animation and centered custom content. |
 | **`Modal`** | `src/components/Modal.tsx` | Accessible dialog modal with keyboard `Escape` handler, focus trapping, and backdrop blur. |
 | **`EmptyState`** | `src/components/EmptyState.tsx` | Clean empty state view with icon, title, description, and optional action trigger. |
-| **`AppHeader`** | `src/components/AppHeader.tsx` | Personalized dynamic greeting ("Good morning / afternoon / evening, Nitin"), calendar date, and theme toggle. |
+| **`AppHeader`** | `src/components/AppHeader.tsx` | Dynamic greeting, calendar date, and theme toggle. |
 | **`BottomNav`** | `src/components/BottomNav.tsx` | Mobile-first 4-tab bottom navigation bar with active indicators and 44px touch targets. |
 
 ---
 
-## 🛠️ Key Engineering Decisions
+## Key Engineering Decisions
 
 | Decision | Why It Matters / Interview Defense |
 | :--- | :--- |
 | **The Trust Boundary (Model Output as Untrusted Input)** | Natural language model outputs are non-deterministic and susceptible to prompt injection, hallucinated schema parameters, and malformed structures. In Campus Compass, LLM responses are treated as untrusted external payloads. The `validateIntents` gate enforces strict schema conformance, strips malicious script tags and injection payloads, drops unrecognized intent types (such as unauthorized deletion or modification attempts), bounds multi-intent bursts to 5, and validates calendar dates against real Gregorian calendar boundaries (e.g. rejecting `2026-02-30`). |
 | **Mandatory Human-in-the-Loop Confirmation** | Autonomous agents that directly commit mutations to databases create phantom records, double-counting, and user distress. In Campus Compass, the assistant only parses utterances into a staged confirmation queue. Users retain full autonomy to inspect, edit fields inline (adjusting titles, categories, priorities, due dates, paise amounts, or protein grams), and discard false positives before a single database write is executed via "Confirm all". |
-| **Server-Side Secret Isolation & Edge Rate Limiting** | Storing LLM API keys (`GEMINI_API_KEY`, `OPENAI_API_KEY`, `LLM_API_KEY`) in client applications exposes credentials to reverse-engineering, quota hijacking, and financial liability. The conversational assistant connects through a serverless function (`/api/parse`) running at the edge. The serverless handler enforces strict payload constraints (<10KB body, <1,000 character transcripts) and sliding-window IP rate limiting (max 30 req/min), gracefully falling back to deterministic local heuristic extraction if remote APIs are unavailable. |
-| **Decoupled LLMProvider Interface** | Client modules and UI components never bind directly to a specific LLM vendor SDK. The `LLMProvider` contract requires only `parse(transcript, context): Promise<unknown>`. Production uses `FetchLLMProvider` calling `/api/parse`, while tests and offline environments use `MockLLMProvider`. Providers can be swapped to Gemini, OpenAI, Anthropic, or an on-device local model without altering a single line of business logic or UI code. |
+| **Server-Side Secret Isolation & Edge Rate Limiting** | Storing LLM API keys in client applications exposes credentials to reverse-engineering, quota hijacking, and financial liability. The conversational assistant connects through a serverless function (`/api/parse`) running at the edge. The serverless handler enforces strict payload constraints (<10KB body, <1,000 character transcripts) and sliding-window IP rate limiting (max 30 req/min), gracefully falling back to deterministic local heuristic extraction if remote APIs are unavailable. |
+| **Decoupled LLMProvider Interface** | Client modules and UI components never bind directly to a specific LLM vendor SDK. The `LLMProvider` contract requires only `parse(transcript, context): Promise<unknown>`. Production uses `FetchLLMProvider` calling `/api/parse`, while tests and offline environments use `MockLLMProvider`. Providers can be swapped to OpenAI, Anthropic, or an on-device local model without altering a single line of business logic or UI code. |
 | **Integer Paise for Money** | In IEEE 754 floating-point arithmetic, binary floating-point fractions cannot represent decimal fractions precisely (e.g. `0.1 + 0.2 === 0.30000000000000004`). In financial apps, float arithmetic produces cumulative rounding errors and off-by-one paise discrepancies. All money is stored and calculated strictly as **integer paise** ($1\text{ INR} = 100\text{ paise}$). Currency conversion from rupee strings (e.g. `"12.5"`) directly into `1250` paise is performed via string splitting and padding without `parseFloat`. INR formatting (`Intl.NumberFormat`) happens strictly at the display boundary. |
 | **Local Date Strings & Injected "Today"** | `date.toISOString().split('T')[0]` converts local time to UTC (GMT+0). For students in non-UTC timezones (e.g. IST UTC+5:30 or PST UTC-8:00) using the app late in the evening, UTC shifts to tomorrow or yesterday, causing tasks to vanish or falsely appear overdue. All dates are formatted using local calendar getters (`formatLocalDate`). Pure functions take `today: string` and `hour: number` as explicit parameters and **never call `new Date()` internally**, making tests 100% deterministic. |
-| **Async Repository Pattern** | UI components and hooks depend strictly on abstract repository interfaces (`TaskRepository`, `ProteinRepository`, `ExpenseRepository`, `AssistantRepository`) returning `Promise<T>`. While implemented with `window.localStorage` for local-first zero-config development, swapping to Supabase, SQLite, or an offline sync engine requires writing repository adapters complying with the same interface—**with zero edits to UI components or hooks**. |
+| **Async Repository Pattern** | UI components and hooks depend strictly on abstract repository interfaces (`TaskRepository`, `ProteinRepository`, `ExpenseRepository`, `AssistantRepository`) returning `Promise<T>`. While implemented with `window.localStorage` for local-first zero-config development, swapping to Supabase, SQLite, or an offline sync engine requires writing repository adapters complying with the same interface, with zero edits to UI components or hooks. |
 | **Pure-Function Business Logic** | All filtering, sorting, recurrence, streaks, weekly summaries, budget totals, suggestion rules, and intent validation gates are pure functions isolated from React lifecycle and DOM APIs. They execute in memory in <500ms across 129 unit tests without requiring DOM mocking libraries or test flakiness. |
 
 ---
 
-## 📊 Comparison with Existing Tools
+## Comparison with Existing Tools
 
 | Tool | What It Does Well | Where It Falls Short for Students | How Campus Compass Differs |
 | :--- | :--- | :--- | :--- |
@@ -207,7 +205,7 @@ All screens and feature modules are built using atomic, decoupled UI components:
 
 ---
 
-## 🧪 Testing & Verification
+## Testing and Verification
 
 The codebase includes **129 unit tests** powered by **Vitest**, covering domain logic, boundary conditions, input parsers, intent safety gates, and repository adapters:
 
@@ -223,15 +221,15 @@ npm run test:watch
 - **Tasks Logic (28 tests):** Daily recurrence across days (resets cleanly), weekly recurrence weekday matching, overdue task retention, priority sorting hierarchy with completed tasks anchored last, category filtering, weekly summary aggregation, habit streak computation (active, pending, broken, restart).
 - **Protein Logic (17 tests):** Body weight multiplier ($1.6\times$), daily summation, remaining protein calculation (floored at 0), display percentage capping at 100%, chronological sorting, settings input validation.
 - **Expenses Logic (15 tests):** Float-safe string-to-paise parser (`"12.5"` $\to$ 1250, `"100"` $\to$ 10000, `"0.75"` $\to$ 75), INR formatting, monthly totals, category totals, remaining budget, uncapped budget percentages, budget status transitions (ok, warning $\ge 80\%$, over $> 100\%$), category warning detection.
-- **Suggestion Engine & Rules (24 tests):** Every rule tested for trigger, non-trigger, and exact numerical boundaries (hour 17 vs 18, 59% vs 60%, 79% vs 80%, 2 vs 3 overdue tasks, 4 vs 5 study completions), severity ranking order (`warning` $>$ `nudge` $>$ `info`), max-3 capping, and empty state output.
-- **Assistant Intent Validation & Injection Defense (21 tests):** Wake word stripping (`hey Nova`), discriminated union intent parsing (`add_task`, `add_expense`, `add_protein`, `clarify`), prompt-injection sanitization, malformed and adversarial JSON protection, dropping unauthorized intent types, real Gregorian calendar date validation (leap year handling, rejecting invalid days), and the 5-intent per utterance burst cap.
+- **Suggestion Engine and Rules (24 tests):** Every rule tested for trigger, non-trigger, and exact numerical boundaries (hour 17 vs 18, 59% vs 60%, 79% vs 80%, 2 vs 3 overdue tasks, 4 vs 5 study completions), severity ranking order (`warning` $>$ `nudge` $>$ `info`), max-3 capping, and empty state output.
+- **Assistant Intent Validation and Injection Defense (21 tests):** Wake word stripping (`hey Nova`), discriminated union intent parsing (`add_task`, `add_expense`, `add_protein`, `clarify`), prompt-injection sanitization, malformed and adversarial JSON protection, dropping unauthorized intent types, real Gregorian calendar date validation (leap year handling, rejecting invalid days), and the 5-intent per utterance burst cap.
 - **LLM Providers (5 tests):** `FetchLLMProvider` HTTP dispatch and error propagation, `MockLLMProvider` canned and custom parser behavior.
 - **Storage Repositories (16 tests):** Seed data loading, async CRUD operations for Task, Protein, Expense, and Assistant Settings LocalStorage adapters with graceful corruption recovery.
-- **Anti-Corruption & Execution Adapters (3 tests):** `buildDaySnapshot` end-to-end integration and `executeIntents` mapping from assistant intents to domain DTOs without side effects.
+- **Anti-Corruption and Execution Adapters (3 tests):** `buildDaySnapshot` end-to-end integration and `executeIntents` mapping from assistant intents to domain DTOs without side effects.
 
 ---
 
-## ⚠️ Known Limitations & Roadmap
+## Known Limitations and Roadmap
 
 - **Proxy for Deadline Pressure:** The app currently lacks university LMS (Canvas/Blackboard) or sleep tracker integrations; high-priority study tasks (`priority === 1`) due within 2 days serve as a heuristic proxy for academic crunch periods.
 - **Local-First Persistence:** Data is stored in the browser's `localStorage`. Clearing browser cache resets data to seed state. A Supabase backend adapter with PostgreSQL and Auth is architecturally pre-wired via the repository pattern.
@@ -243,7 +241,7 @@ npm run test:watch
 
 ---
 
-## 🚀 Local Setup & Installation
+## Local Setup and Installation
 
 ### Prerequisites
 - Node.js `v18.0.0` or higher
@@ -270,6 +268,6 @@ npm run build
 
 ---
 
-## 📄 License
+## License
 
-This project is licensed under the MIT License — see the [LICENSE](LICENSE) file for details.
+This project is licensed under the MIT License: see the [LICENSE](LICENSE) file for details.

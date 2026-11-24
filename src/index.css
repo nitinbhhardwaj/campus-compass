@@ -364,7 +364,7 @@ button:focus-visible {
   background: var(--surface);
   color: var(--ink);
   font: 600 14px "Hanken Grotesk", sans-serif;
-  border-radius: 999px;
+  border-radius: 4px;
   cursor: pointer;
   transition: background-color 0.15s ease, color 0.15s ease;
 }
@@ -442,7 +442,7 @@ section.block {
   background: var(--surface);
   color: var(--ink);
   font: 600 13px "Hanken Grotesk", sans-serif;
-  border-radius: 999px;
+  border-radius: 4px;
   cursor: pointer;
 }
 
@@ -452,7 +452,7 @@ section.block {
 
 @media (prefers-reduced-motion: no-preference) {
   .note {
-    transition: transform 0.2s;
+    transition: transform 0.15s;
   }
   .note:hover {
     transform: rotate(0);

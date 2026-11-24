@@ -9,17 +9,6 @@ interface ProteinQuickAddProps {
   onAdd: (dto: CreateProteinEntryDTO) => Promise<void>;
 }
 
-const PRESET_EMOJIS: Record<string, string> = {
-  egg: '🥚',
-  paneer: '🧀',
-  dal: '🍲',
-  whey: '⚡',
-  chicken: '🍗',
-  milk: '🥛',
-  soya: '🌱',
-  curd: '🥣',
-};
-
 export const ProteinQuickAdd: React.FC<ProteinQuickAddProps> = ({
   today,
   onAdd,
@@ -97,22 +86,19 @@ export const ProteinQuickAdd: React.FC<ProteinQuickAddProps> = ({
         className="flex items-center gap-2 overflow-x-auto no-scrollbar py-1"
       >
         {PROTEIN_PRESETS.map((preset) => {
-          const emoji = PRESET_EMOJIS[preset.id] || '⚡';
           return (
             <button
               key={preset.id}
               type="button"
               onClick={() => handlePresetClick(preset)}
-              className="flex-shrink-0 inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800/80 hover:bg-indigo-50/70 dark:hover:bg-indigo-950/60 border border-slate-200/80 dark:border-slate-700 text-left transition-all cursor-pointer focus:outline-none focus:ring-2 focus:ring-indigo-500 min-h-[44px]"
+              className="flex-shrink-0 inline-flex items-center gap-1.5 px-3 py-2 rounded bg-slate-50 dark:bg-slate-800/80 hover:bg-indigo-50/70 dark:hover:bg-indigo-950/60 border border-slate-200/80 dark:border-slate-700 text-left transition-all cursor-pointer focus:outline-none focus:ring-2 focus:ring-indigo-500 min-h-[44px]"
               aria-label={`Add ${preset.label}, approximately ${preset.grams} grams of protein`}
             >
-              <span className="text-base" aria-hidden="true">
-                {emoji}
-              </span>
+              <Plus size={13} className="text-indigo-600 dark:text-indigo-400" aria-hidden="true" />
               <span className="text-xs font-semibold text-slate-700 dark:text-slate-200">
                 {preset.label}
               </span>
-              <span className="text-[10px] font-bold text-indigo-600 dark:text-indigo-400 bg-white dark:bg-slate-900 px-1.5 py-0.5 rounded-md border border-slate-200/60 dark:border-slate-700">
+              <span className="text-[10px] font-bold text-indigo-600 dark:text-indigo-400 bg-white dark:bg-slate-900 px-1.5 py-0.5 rounded border border-slate-200/60 dark:border-slate-700">
                 ~{preset.grams}g
               </span>
             </button>

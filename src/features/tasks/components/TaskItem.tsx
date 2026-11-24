@@ -66,7 +66,7 @@ export const TaskItem: React.FC<TaskItemProps> = ({
             color: 'var(--ink)',
             font: '600 12px "Hanken Grotesk", sans-serif',
             padding: '2px 8px',
-            borderRadius: '999px',
+            borderRadius: '4px',
             cursor: 'pointer',
             minHeight: '28px',
           }}
@@ -83,7 +83,7 @@ export const TaskItem: React.FC<TaskItemProps> = ({
             color: 'var(--danger)',
             font: '600 12px "Hanken Grotesk", sans-serif',
             padding: '2px 8px',
-            borderRadius: '999px',
+            borderRadius: '4px',
             cursor: 'pointer',
             minHeight: '28px',
           }}

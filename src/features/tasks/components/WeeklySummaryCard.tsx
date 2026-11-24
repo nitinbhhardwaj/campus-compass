@@ -37,7 +37,7 @@ export const WeeklySummaryCard: React.FC<WeeklySummaryCardProps> = ({
             This week: {summary.totalCompleted} completed
           </strong>
           <span style={{ fontSize: '12.5px', color: 'var(--muted)', marginLeft: '8px' }}>
-            ({weekStart.slice(5)} – {weekEnd.slice(5)})
+            ({weekStart.slice(5)} to {weekEnd.slice(5)})
           </span>
         </div>
         <button

@@ -326,7 +326,7 @@ export const AssistantModal: React.FC<AssistantModalProps> = ({
                     lineHeight: 1.4,
                   }}
                 >
-                  🔒 <em>Your message is sent to an AI service to understand it.</em>
+                  <em>Your message is sent to an AI service to understand it.</em>
                 </p>
               </form>
 

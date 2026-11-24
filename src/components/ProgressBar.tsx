@@ -15,14 +15,14 @@ export const ProgressBar: React.FC<ProgressBarProps> = ({
 
   return (
     <div
-      className={`w-full bg-slate-100 dark:bg-slate-800 h-2 rounded-full overflow-hidden ${className}`}
+      className={`w-full bg-slate-100 dark:bg-slate-800 h-2 rounded overflow-hidden ${className}`}
       role="progressbar"
       aria-valuenow={percent}
       aria-valuemin={0}
       aria-valuemax={100}
     >
       <div
-        className={`h-full rounded-full transition-all duration-300 ease-out ${color}`}
+        className={`h-full rounded transition-all duration-300 ease-out ${color}`}
         style={{ width: `${clampedPercent}%` }}
       />
     </div>

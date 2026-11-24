@@ -15,7 +15,7 @@ interface ExpenseListProps {
 const CATEGORY_STYLES: Record<ExpenseCategory, { label: string; variant: BadgeProps['variant'] }> = {
   food: { label: 'Food', variant: 'amber' },
   travel: { label: 'Travel', variant: 'slate' },
-  rent: { label: 'Rent', variant: 'purple' },
+  rent: { label: 'Rent', variant: 'slate' },
   subscriptions: { label: 'Subs', variant: 'indigo' },
   study: { label: 'Study', variant: 'emerald' },
   other: { label: 'Other', variant: 'slate' },

@@ -23,7 +23,7 @@ export const AssistantTrigger: React.FC<AssistantTriggerProps> = ({
         minWidth: '48px',
         minHeight: '48px',
         padding: '10px 16px',
-        borderRadius: '9999px',
+        borderRadius: '4px',
         background: 'var(--ink)',
         color: 'var(--paper)',
         border: '2px solid var(--paper)',

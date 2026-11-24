@@ -37,7 +37,7 @@ export const BottomNav: React.FC<BottomNavProps> = ({
               type="button"
               onClick={() => onChange(tab.id)}
               aria-label={tab.label}
-              className={`relative flex flex-col items-center justify-center py-2 px-3 min-h-[48px] min-w-[56px] transition-colors rounded-xl cursor-pointer ${
+              className={`relative flex flex-col items-center justify-center py-2 px-3 min-h-[48px] min-w-[56px] transition-colors rounded cursor-pointer ${
                 isActive
                   ? 'text-indigo-600 dark:text-indigo-400 font-bold'
                   : 'text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200'
@@ -46,7 +46,7 @@ export const BottomNav: React.FC<BottomNavProps> = ({
               <div className="relative">
                 <Icon className={`w-5 h-5 ${isActive ? 'stroke-[2.5]' : 'stroke-[1.75]'}`} />
                 {tab.id === 'insights' && insightCount > 0 && (
-                  <span className="absolute -top-1 -right-2.5 w-2 h-2 rounded-full bg-indigo-600 dark:bg-indigo-400 ring-2 ring-white dark:ring-slate-900" />
+                  <span className="absolute -top-1 -right-2.5 w-2 h-2 rounded-sm bg-indigo-600 dark:bg-indigo-400 ring-2 ring-white dark:ring-slate-900" />
                 )}
               </div>
               <span className="text-[10px] mt-1">{tab.label}</span>
