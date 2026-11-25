@@ -3,7 +3,7 @@
  * Handles conversational speech/text parsing into structured intents.
  * 
  * Security & Reliability:
- * 1. API keys (GEMINI_API_KEY / OPENAI_API_KEY / LLM_API_KEY) live strictly in process.env, never in client code.
+ * 1. API key (GEMINI_API_KEY) lives strictly in process.env, never in client code.
  * 2. Payload size protection: limits input transcript to 1,000 characters and body to 10KB.
  * 3. Rate limiting: in-memory IP sliding window (max 30 requests / min).
  * 4. Model output is treated as untrusted JSON; strictly formatted via system prompt.
@@ -146,10 +146,10 @@ INSTRUCTIONS:
 6. Respect user dietary preferences in clarifications or suggestions (if diet is "veg", never suggest egg or non-veg foods; if "egg", never suggest meat). However, if the user explicitly says they consumed an item (for example, "had two eggs" while set to veg), always extract and log that consumed item accurately.
 7. Output raw JSON only. Do not wrap in markdown or backticks.`;
 
-  const apiKey = process.env.GEMINI_API_KEY || process.env.OPENAI_API_KEY || process.env.LLM_API_KEY;
+  const apiKey = process.env.GEMINI_API_KEY;
 
   if (!apiKey) {
-    // If no remote API key is provisioned in the environment, fallback gracefully to rule-based fallback parsing
+    // If no remote GEMINI_API_KEY is provisioned in the environment, fallback gracefully to rule-based fallback parsing
     const fallbackIntents = generateLocalFallbackIntents(transcript, today);
     const responsePayload = { intents: fallbackIntents };
     if (isWebReq) return new Response(JSON.stringify(responsePayload), { status: 200, headers: { 'Content-Type': 'application/json' } });
@@ -157,77 +157,45 @@ INSTRUCTIONS:
   }
 
   try {
-    // Call Gemini API if GEMINI_API_KEY is present
-    if (process.env.GEMINI_API_KEY) {
-      const model = process.env.GEMINI_MODEL || 'gemini-3.8-flash';
-      const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`;
-      const response = await fetch(endpoint, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'x-goog-api-key': process.env.GEMINI_API_KEY,
-        },
-        body: JSON.stringify({
-          contents: [
-            {
-              role: 'user',
-              parts: [
-                { text: systemPrompt },
-                { text: `User Utterance: "${transcript}"` },
-              ],
-            },
-          ],
-          generationConfig: {
-            responseMimeType: 'application/json',
-            temperature: 0.1,
-          },
-        }),
-      });
-
-      if (response.status === 404) {
-        console.error(`assistant model unavailable: ${model}`);
-        const errorBody = { error: 'assistant model unavailable' };
-        if (isWebReq) return new Response(JSON.stringify(errorBody), { status: 404, headers: { 'Content-Type': 'application/json' } });
-        return res.status(404).json(errorBody);
-      }
-
-      if (!response.ok) {
-        throw new Error(`Gemini API error: ${response.status}`);
-      }
-
-      const data = await response.json();
-      const rawText = data?.candidates?.[0]?.content?.parts?.[0]?.text;
-      const parsed = JSON.parse(rawText || '{}');
-      if (isWebReq) return new Response(JSON.stringify(parsed), { status: 200, headers: { 'Content-Type': 'application/json' } });
-      return res.status(200).json(parsed);
-    }
-
-    // Default to OpenAI-compatible endpoint if OPENAI_API_KEY is present
-    const endpoint = 'https://api.openai.com/v1/chat/completions';
+    const model = process.env.GEMINI_MODEL || 'gemini-3.8-flash';
+    const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`;
     const response = await fetch(endpoint, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        Authorization: `Bearer ${apiKey}`,
+        'x-goog-api-key': apiKey,
       },
       body: JSON.stringify({
-        model: 'gpt-4o-mini',
-        messages: [
-          { role: 'system', content: systemPrompt },
-          { role: 'user', content: transcript },
+        contents: [
+          {
+            role: 'user',
+            parts: [
+              { text: systemPrompt },
+              { text: `User Utterance: "${transcript}"` },
+            ],
+          },
         ],
-        response_format: { type: 'json_object' },
-        temperature: 0.1,
+        generationConfig: {
+          responseMimeType: 'application/json',
+          temperature: 0.1,
+        },
       }),
     });
 
+    if (response.status === 404) {
+      console.error(`assistant model unavailable: ${model}`);
+      const errorBody = { error: 'assistant model unavailable' };
+      if (isWebReq) return new Response(JSON.stringify(errorBody), { status: 404, headers: { 'Content-Type': 'application/json' } });
+      return res.status(404).json(errorBody);
+    }
+
     if (!response.ok) {
-      throw new Error(`OpenAI API error: ${response.status}`);
+      throw new Error(`Gemini API error: ${response.status}`);
     }
 
     const data = await response.json();
-    const content = data?.choices?.[0]?.message?.content;
-    const parsed = JSON.parse(content || '{}');
+    const rawText = data?.candidates?.[0]?.content?.parts?.[0]?.text;
+    const parsed = JSON.parse(rawText || '{}');
     if (isWebReq) return new Response(JSON.stringify(parsed), { status: 200, headers: { 'Content-Type': 'application/json' } });
     return res.status(200).json(parsed);
   } catch (err) {
