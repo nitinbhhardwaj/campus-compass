@@ -80,7 +80,7 @@ export const PrivacyPolicy: React.FC = () => {
             6. Conversational AI Assistant
           </h2>
           <p style={{ margin: 0 }}>
-            If you choose to use the conversational assistant feature, your spoken or typed message is transmitted securely to our serverless parsing endpoint (/api/parse). If remote API keys are provisioned, the utterance is processed by a named AI provider strictly to extract structured actions (tasks, expenses, protein). The provider does not use your requests to train public models. If no remote provider key is set, processing happens entirely within deterministic local heuristics. No audio recordings are permanently stored.
+            If you choose to use the conversational assistant feature, your spoken or typed message is transmitted securely to our serverless parsing endpoint (/api/parse). When configured, assistant messages are sent to Google's Gemini API strictly to extract structured actions (tasks, expenses, protein). The provider does not use your requests to train public models. If no remote provider key is set, processing happens entirely within deterministic local heuristics. No audio recordings are permanently stored.
           </p>
         </section>
 
