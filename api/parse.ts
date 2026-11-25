@@ -159,7 +159,8 @@ INSTRUCTIONS:
   try {
     // Call Gemini API if GEMINI_API_KEY is present
     if (process.env.GEMINI_API_KEY) {
-      const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${process.env.GEMINI_API_KEY}`;
+      const model = process.env.GEMINI_MODEL || 'gemini-3.8-flash';
+      const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${process.env.GEMINI_API_KEY}`;
       const response = await fetch(endpoint, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
