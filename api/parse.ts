@@ -184,6 +184,13 @@ INSTRUCTIONS:
         }),
       });
 
+      if (response.status === 404) {
+        console.error(`assistant model unavailable: ${model}`);
+        const errorBody = { error: 'assistant model unavailable' };
+        if (isWebReq) return new Response(JSON.stringify(errorBody), { status: 404, headers: { 'Content-Type': 'application/json' } });
+        return res.status(404).json(errorBody);
+      }
+
       if (!response.ok) {
         throw new Error(`Gemini API error: ${response.status}`);
       }

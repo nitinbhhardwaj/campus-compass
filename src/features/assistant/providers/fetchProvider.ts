@@ -25,7 +25,17 @@ export class FetchLLMProvider implements LLMProvider {
 
     if (!response.ok) {
       const errorText = await response.text().catch(() => '');
-      throw new Error(`Assistant parse error (${response.status}): ${errorText || response.statusText}`);
+      let parsedError: string | null = null;
+      try {
+        const errorJson = JSON.parse(errorText);
+        parsedError = errorJson.error;
+      } catch {}
+
+      if (parsedError === 'assistant model unavailable' || response.status === 404) {
+        throw new Error("assistant isn't available right now");
+      }
+
+      throw new Error(`Assistant parse error (${response.status}): ${parsedError || errorText || response.statusText}`);
     }
 
     return await response.json();

@@ -46,6 +46,21 @@ describe('LLM Providers', () => {
 
       await expect(provider.parse('', dummyContext)).rejects.toThrow('Assistant parse error (400): Missing transcript');
     });
+
+    it('throws friendly message when assistant model is unavailable (404)', async () => {
+      const mockFetch = vi.fn().mockResolvedValue({
+        ok: false,
+        status: 404,
+        statusText: 'Not Found',
+        text: async () => JSON.stringify({ error: 'assistant model unavailable' }),
+      });
+
+      const provider = new FetchLLMProvider({
+        fetchFn: mockFetch as any,
+      });
+
+      await expect(provider.parse('test', dummyContext)).rejects.toThrow("assistant isn't available right now");
+    });
   });
 
   describe('MockLLMProvider', () => {

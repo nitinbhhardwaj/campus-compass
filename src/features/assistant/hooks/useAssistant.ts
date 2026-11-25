@@ -144,7 +144,14 @@ export function useAssistant(
 
         setInputText('');
       } catch (err: any) {
-        const message = err?.message || 'Failed to understand request. Please try again.';
+        let message = err?.message || 'Failed to understand request. Please try again.';
+        if (
+          message === 'assistant model unavailable' ||
+          message.includes('assistant model unavailable') ||
+          message.includes('404')
+        ) {
+          message = "assistant isn't available right now";
+        }
         setError(message);
       } finally {
         setIsParsing(false);
